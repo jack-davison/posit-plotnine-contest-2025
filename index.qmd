@@ -18,9 +18,16 @@ format:
         code-copy: true
         highlight-style: a11y
         lightbox: auto
+        embed-resources: true
 execute:
     warning: false
     error: false
+custom-callout:
+  yougov:
+    icon-symbol: "📊"
+    color: "#ff6756"
+filters:
+- custom-callout
 ---
 
 # Introduction
@@ -96,7 +103,7 @@ As previously noted, all data were obtained using the "Get the data" buttons at 
 
 ## Leader Favourability Trends (Line Charts)
 
-::: {.callout-note collapse="true"}
+::: {.yougov collapse="true" appearance="simple"}
 ### See original plot
 
 <img src="assets/media/yougov_keir.png" style='border:1px solid #ff6756' >
@@ -447,7 +454,7 @@ numbers = [
 
 ## Leader Favourability By Party (Bar Charts)
 
-::: {.callout-note collapse="true"}
+::: {.yougov collapse="true" appearance="simple"}
 ### See original plot
 
 <img src="assets/media/yougov_bars.png" style='border:1px solid #ff6756' >
@@ -691,7 +698,7 @@ green_party_leaders = (
 
 ## Overall Senior Political Figure Favourability (Stacked Bars)
 
-::: {.callout-note collapse="true"}
+::: {.yougov collapse="true" appearance="simple"}
 ### See original plot
 
 <img src="assets/media/yougov_stacked.png" style='border:1px solid #ff6756' >

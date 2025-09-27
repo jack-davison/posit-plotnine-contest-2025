@@ -13,3 +13,4 @@ wheels/
 /.quarto/
 index.html
 index_files/*
+**/*.quarto_ipynb
