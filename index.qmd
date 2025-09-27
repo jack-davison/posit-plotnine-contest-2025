@@ -1,0 +1,890 @@
+---
+title: "Recreating YouGov Plots in plotnine"
+subtitle: "Net favourability gap between Conservatives and Labour smallest in nearly four years: Political favourability ratings, August 2025"
+author: 
+    - id: JD
+      name: Jack Davison
+      url: https://jack-davison.github.io/
+      degrees:
+        - PhD
+      orcid: "0000-0003-2653-6615"
+date: today
+format: 
+    html:
+        toc: true
+        toc-location: left
+        title-block-banner: "#ff6756"
+        linkcolor: "#ff6756"
+        code-copy: true
+        highlight-style: a11y
+        lightbox: auto
+execute:
+    warning: false
+    error: false
+---
+
+# Introduction
+
+*This document is a submission for [Posit's 2025 Plotnine Contest](https://github.com/has2k1/plotnine/discussions/972).*
+
+::: {.column-page}
+![](assets/media/banner.png){.nolightbox}
+:::
+
+## Purpose
+
+This page includes attempted one-to-one recreations of the visualisations in ["Net favourability gap between Conservatives and Labour smallest in nearly four years"](https://yougov.co.uk/politics/articles/52795-political-favourability-ratings-august-2025) in Python and plotnine, originally published by [Dylan Difford](https://yougov.co.uk/people/dylan.difford), a Junior Data Journalist at YouGov, on August 19, 2025. It shows how many of YouGov's effective data visualisations can be recreated using the plotnine Python library.
+
+YouGov describes itself as:
+
+> ...an international online research data and analytics technology group. Our mission is to offer unparalleled insight into what the world thinks.
+>
+> At the core of our platform is an ever-growing source of connected consumer data that has developed daily over our 20 years of operation. We call it living data. All of our products and services draw upon this detailed understanding of our 29+ million registered panel members to deliver accurate, actionable consumer insights.
+
+While YouGov collects and vends data relating to a myriad of topics, there are many core data visualisations which crop up time and time again in their online articles. The article chosen for recreation shows some nice examples of typical YouGov visualisations, including line and bar charts. If you would like to recreate YouGov articles yourself, the site makes it particularly easy; all data can be obtained using the "Get the data" buttons at the bottom of each plot in a YouGov web article.
+
+## About Me
+
+I am a senior consultant and data analyst working for an Environmental Consultancy in South Oxfordshire in the United Kingdom. 
+
+My work typically involves writing dynamic reports, creating effective data visualisations, authoring Shiny web apps, writing and maintaining R packages, facilitating training workshops, and otherwise writing code to do interesting things with data.
+
+I'm a collaborator on the [{openair} project](https://github.com/davidcarslaw/openair) and the lead developer on the [{openairmaps}](https://github.com/davidcarslaw/openairmaps) R package.
+
+My main programming language is **R** and I've rarely used Python in anger, so consider this a warning that there will be some references to the R programming language throughout. If I've made some terrible Python faux-pas anywhere in this document, please let me know!
+
+# Data Visualisation
+
+## Set-Up
+
+We're going to start by loading some packages:
+
+- We'll do all of our data manipulation in `polars` - it's fast and has an appealing syntax for an R user.
+
+- To help a bit, we'll also import `polars.selectors` - it's our `tidyselect` equivalent.
+
+- Naturally, we'll import `plotnine` for our plots. 
+
+- Finally, we'll import `datetime` as we'll be working with dates and will need to construct and manipulate them.
+
+```{python}
+#| code-fold: false
+import polars as pl
+import polars.selectors as cs
+from plotnine import *
+from datetime import datetime
+```
+
+We're also going to define a function from the off. It takes a load of dates. The first time it sees a new year, it'll create a month-year label. The next time it sees the same year, it'll just create a month label. This works near enough the same as `scales::label_date_short()` in R, which I don't believe is implemented in `plotnine`!
+
+```{python}
+def month_labels(dates):
+    labels = []
+    seen_years = set()
+    for d in dates:
+        if d.year not in seen_years:
+            labels.append(d.strftime("\n%b\n %Y"))  # e.g. "Feb 2025"
+            seen_years.add(d.year)
+        else:
+            labels.append(d.strftime("\n%b"))  # e.g. "Mar"
+    return labels
+```
+
+As previously noted, all data were obtained using the "Get the data" buttons at the bottom of each plot in the YouGov web article. Their default names are just random numbers and letters, so I've taken the liberty to rename them to be something more evocative.
+
+## Leader Favourability Trends (Line Charts)
+
+The first class of charts we'll recreate are the favourability trends. The original article has four - one for each of Keir Starmer, Nigel Farage, Kemi Badenoch and Ed Davies. The 'Unfavourable' trend is given in red, the 'Favourable' trend in purple, and some key milestones in vertical lines. The lines also get direct labels at their ends in lieu of a proper plot legend.
+
+As we're making four very similar charts, I'm defining a function. First, it reads and manipulates our input data:
+
+- The first chunk of this function uses the `file` argument to read a specific CSV and do some processing; the first column gets a name, the two favourable/unfavourable columns get stacked on top of one another, the date is formatted as a date, and the overall dataset is filtered to be from 2024. This last step is to match what is displayed in the YouGov graph; interestingly you get a lot more data in the download file than what is visualised. 
+
+- With this newly processed data, we create a separate polars DataFrame which just includes the final value for each of 'favourable' and 'unfavourable'. We need this for the 'direct labels' at the end of the line charts.
+
+- On the subject of the direct labels; the very last method applied in the first chunk of my function uses the `extra_sep` argument. As we're using direct labels, if the ends of the lines are very close together these can potentially overlap one another. This argument lets us add a little extra spacing between the values. 
+
+    - I happen to know that 'unfavourable' is always higher for these four politicians (and therefore wants that extra spacing *adding*) - if it was more variable I'd have to write something clever to find the higher of the two values and add to that one, but in this case we can hard-code it. 
+    
+    - There's also a world in which `extra_sep` isn't needed at all and it could auto-detect an appropriate gap to add if the two values are too close. 
+    
+    - We could also play around with a package like [adjustText](https://github.com/Phlya/adjustText) (inspired by R's [ggrepel](https://ggrepel.slowkow.com/)) which can automatically reduce overlaps
+    
+    - All that being said, here I'd like finer control over the output so we're doing it by hand! Note that the adjusted values are saved as their own variable as we still need the *actual* values to plot the lines and label with.
+
+Then we construct our plot. The syntax is very very similar to R's `ggplot2`, by design. There are some steps here that are worth further mention, however:
+
+- The direct labels on the YouGov plots have a bold title (Favourable/Unfavourable) and a normal weight value label beneath them. To my knowledge, this requires two `geom_text()` calls - one with `fontweight="bold"` and the other without. I used `nudge_y` and `nudge_x` to ensure the labels are correctly placed relative to one another and the end of the line - the bold title is directly to the right, and the normal weight value below that. In R, we might use a package like [marquee](https://marquee.r-lib.org/) to do this in one step.
+
+- A few things about axis scales:
+
+    - The x- and y-axis scales can take a `range()` for the `breaks` argument as well as a list, which is convenient. One thing that totally caught me out as an R user was `range(0, 70, 10)` resolves to `[0, 10, 20, ..., 50, 60]` **not** `[0, 10, 20, ..., 60, 70]` - hence the use of `range(0, 71, 10)`. In R, `seq(0, 70, 10)` would include `70`.
+
+    - For the x-axis we use the `start_date` argument to specify a specific start date for that axis, as they vary between politicians. 
+
+    - The `expand` argument is also used to surpress the automatic padding `plotnine` (and `ggplot2`) adds to axis ranges - `[0,0]` removes all of this, though the x-axis does retain some so that the direct labels are still readable.
+
+    - We also use out `month_labels` argument in `labels`. This works because `labels` can take any callable that recieves the axis breaks and then does whatever arbitrary thing you'd like to them, as long as it returns a label for plotting.
+
+- Various `theme()` options are added. Notably the legend is removed with `legend_position`, and `plot_title_position` is set to `"plot"`. This second argument is quite subtle, but it makes the title sit on top of the y-axis labels rather than be aligned with the actual plotting area.
+
+Have a look in each tab to see the plots.
+
+```{python}
+def plot_individual_favourability(who, file, start_date, extra_sep=0):
+    # read data into python
+    plot_data = (
+        pl.read_csv(file)
+        # rename the first column to be 'date'
+        .rename({"X.1": "date"})
+        # pivot the table longer to stack the rankings
+        .unpivot(["Favourable", "Unfavourable"], index="date")
+        # coerce date to an actual date
+        .with_columns(pl.col("date").str.to_datetime("%d/%m/%Y"))
+        # to match yougov article - filter for 2024
+        .filter(pl.col("date").dt.year() >= 2024)
+        # if the fields are very close together, might need to nudge them further apart
+        .with_columns(
+            pl.when(pl.col("variable") == "Unfavourable")
+            .then(pl.col("value") + extra_sep)
+            .otherwise(pl.col("value") - extra_sep)
+            .alias("text_value")
+        )
+    )
+
+    # get the final values in the data - needed for direct labels
+    max_dates = plot_data.sort("date").group_by("variable").tail(1)
+
+    # construct plot
+    plot = (
+        ggplot(plot_data, aes(x="date", y="value", color="variable"))
+        # geometries
+        + geom_vline(
+            xintercept=datetime(2024, 7, 4), linetype="dotted", color="#A6A6A6"
+        )
+        + geom_line()
+        # need two texts here - one bold for the variable, one normal for the value
+        + geom_text(
+            mapping=aes(label="variable", y="text_value"),
+            data=max_dates,
+            show_legend=False,
+            ha="left",
+            nudge_x=10,
+            fontweight="bold",
+            size=8,
+        )
+        + geom_text(
+            mapping=aes(label="value", y="text_value"),
+            data=max_dates,
+            show_legend=False,
+            ha="left",
+            nudge_x=10,
+            nudge_y=-3,
+            size=8,
+        )
+        # scales
+        + scale_color_manual(
+            values={"Favourable": "#9f29ff", "Unfavourable": "#e42119"}
+        )
+        + scale_y_continuous(limits=[0, 70], breaks=range(0, 71, 10), expand=[0, 0])
+        + scale_x_datetime(
+            labels=month_labels,
+            date_breaks="3 month",
+            limits=[start_date, datetime(2025, 12, 1)],
+            expand=[0, 0.1],
+        )
+        # themes
+        + theme_minimal()
+        + theme(
+            axis_text_y=element_text(color="#A6A6A6"),
+            axis_text_x=element_text(color="#7B7B7B"),
+            panel_grid=element_line(color="#E8E8E8"),
+            panel_grid_major_x=element_blank(),
+            panel_grid_minor_x=element_blank(),
+            panel_grid_minor_y=element_blank(),
+            axis_line_x=element_line(color="#3e3f41"),
+            legend_position="none",
+            plot_title=element_text(face="bold", size=22 / 1.5),
+            plot_subtitle=element_text(face="light", size=12 / 1.5),
+            plot_title_position="plot",
+        )
+        # labels & annotations
+        + labs(
+            x="",
+            y="",
+            title=who + " favourability tracker",
+            subtitle="Do you have a favourable or unfavourable opinion of the following? ["
+            + who
+            + "] %\n",
+        )
+        + annotate(
+            geom="text",
+            x=datetime(2024, 7, 10),
+            y=2.5,
+            label="General election",
+            size=8,
+            ha="left",
+            color="#3e3f41",
+            fontstyle="italic",
+        )
+    )
+
+    return plot
+```
+
+::: {.panel-tabset}
+
+### Keir Starmer
+
+Keir Starmer is our current Prime Minister and the leader of the nominally centre-left Labour Party. Since the election his favourability rating has been decreasing, although it has remained relatively stable in the recent months.
+
+```{python}
+#| column: body-outset-right
+plot_individual_favourability(
+    "Keir Starmer", "assets\\data\\yougov_keir.csv", start_date=datetime(2024, 1, 1)
+)
+```
+
+### Nigel Farage
+
+Nigel Farage is the leader of the new right-wing populist Reform UK Party. While Reform UK is a young party with very few MPs, it has had recent success in local elections and has received a lot of media attention. Nigel Farage's favourability has been relatively stable since the general election.
+
+```{python}
+#| column: body-outset-right
+plot_individual_favourability(
+    "Nigel Farage", "assets\\data\\yougov_nigel.csv", start_date=datetime(2024, 6, 1)
+)
+```
+
+### Kemi Badenoch
+
+Kemi Badenoch is the Leader of the Opposition as well as the leader of the right-wing Conservative Party. The Conservatives (or 'Tories') significantly lost the last general election under the leadership of Rishi Sunak to the Labour Party after 14 years in power. Kemi Badenoch succeeded Sunak a few months later.
+
+Kemi's plot has an extra vertical annotation, which lets us take advantage of `plotnine`'s capability for "post-hoc" plot tweaking. As our function returns a `plotnine` object, we can add additional `geom_vline()`s and `annotate()`s to create a marker for the date at which she took over the Conservative party.
+
+```{python}
+#| column: body-outset-right
+(
+    plot_individual_favourability(
+        "Kemi Badenoch",
+        "assets\\data\\yougov_kemi.csv",
+        start_date=datetime(2024, 5, 12),
+    )
+    # the function returns a plotnine object, so we can adjust it some more
+    + geom_vline(xintercept=datetime(2024, 10, 31), linetype="dotted", color="#A6A6A6")
+    + annotate(
+        geom="text",
+        x=datetime(2024, 11, 5),
+        y=1.5,
+        label="Becomes\nConservative leader",
+        size=8,
+        ha="left",
+        va="bottom",
+        color="#3e3f41",
+        fontstyle="italic",
+    )
+)
+```
+
+### Ed Davey
+
+Ed Davey is the leader of the third biggest party in the House of Commons, the more centrist Liberal Democrats. After a few years in the wilderness after an unfortunate coalition with the Tories, the Liberal Democrats performed well at the last general election, now having the largest proportion of seats in the Commons the Lib Dems have ever won.
+
+Ed Davey's plot is interesting in that his "Unfavourable" and "Favourable" ratings are quite similar to one another. This is why we included the `extra_sep` argument in the plotting function; this adds a bit of padding between the two ratings to prevent them from overlapping. As in Kemi's plot, we can use `annotate()` to add the short dashed lines to help label the data lines.
+
+```{python}
+# | column: body-outset-right
+(
+    plot_individual_favourability(
+        "Ed Davey",
+        "assets\\data\\yougov_ed.csv",
+        start_date=datetime(2024, 5, 12),
+        extra_sep=2,
+    )
+    + annotate(
+        geom="segment",
+        x=datetime(2025, 8, 15),
+        xend=datetime(2025, 8, 22, 12),
+        y=33,
+        yend=35,
+        linetype="dotted",
+        color="#e42119",
+    )
+    + annotate(
+        geom="segment",
+        x=datetime(2025, 8, 15),
+        xend=datetime(2025, 8, 22, 12),
+        y=30,
+        yend=28,
+        linetype="dotted",
+        color="#9f29ff",
+    )
+)
+```
+
+:::
+
+The last plot of this type is a "net favourablity" tracker, found near the bottom of the original article. This shows that Reform UK's net favourability, while negative, is the highest when compared to Labour and the Conservatives, who both show very similar net favourability.
+
+This plot is broadly similar to the plots above, including the direct labels and the dotted lines seen on Ed Davey's plot. This plot demonstrates another use of the `labels` argument of `scales` functions, which can override existing scale labels with any arbitrary strings. In this case, it is used to add the `±` symbol to "0" and the `+` symbols to positive numbers, which are not present by default.
+
+```{python}
+# | column: body-outset-right
+
+# read the "main parties" dataset
+main_parties = (
+    pl.read_csv("assets\\data\\yougov_tories_labour_reform.csv")
+    .rename({"X.1": "date"})
+    .unpivot(["Conservative", "Labour", "Reform UK"], index="date")
+    .with_columns(pl.col("date").str.to_datetime("%d/%m/%Y"))
+    .filter(pl.col("value").is_not_null())
+    # again, we need to nudge the data around a bit
+    .with_columns(
+        pl.when(pl.col("variable") == "Labour")
+        .then(pl.col("value") + 2)
+        .when(pl.col("variable") == "Conservative")
+        .then(pl.col("value") - 2)
+        .otherwise(pl.col("value"))
+        .alias("text_value")
+    )
+)
+
+# needed for plotting
+max_dates = main_parties.sort("date").group_by("variable").tail(1)
+
+# axis labels needed here! Needs "+" for positive values, and "+/-" for zero
+numbers = [
+    f"+{i}" if i > 0 else f"±{abs(i)}" if i == 0 else str(i) for i in range(-60, 21, 10)
+]
+
+# construct plot
+(
+    ggplot(main_parties, aes(x="date", y="value", color="variable"))
+    # geometries
+    + geom_hline(yintercept=0, color="#3e3f41")
+    + geom_line()
+    + geom_text(
+        mapping=aes(label="variable", y="text_value"),
+        data=max_dates,
+        show_legend=False,
+        ha="left",
+        nudge_x=30,
+        nudge_y=0,
+        fontweight="bold",
+        size=8,
+    )
+    + geom_text(
+        mapping=aes(label="value", y="text_value"),
+        data=max_dates,
+        show_legend=False,
+        ha="left",
+        nudge_x=30,
+        nudge_y=-3,
+        size=8,
+    )
+    # scales
+    + scale_x_datetime(
+        date_breaks="1 year",
+        date_labels="%b %Y",
+        limits=[datetime(2020, 1, 1, 0), datetime(2026, 8, 1)],
+        expand=[0, 0.1],
+    )
+    + scale_y_continuous(
+        limits=(-65, 20), breaks=range(-60, 21, 10), labels=numbers, expand=(0, 0)
+    )
+    + scale_color_manual(
+        values={"Reform UK": "#0082c7", "Labour": "#c20800", "Conservative": "#003cab"}
+    )
+    # themes
+    + theme_minimal()
+    + theme(
+        axis_text_y=element_text(color="#A6A6A6"),
+        axis_text_x=element_text(color="#7B7B7B"),
+        panel_grid=element_line(color="#E8E8E8"),
+        panel_grid_major_x=element_blank(),
+        panel_grid_minor_x=element_blank(),
+        panel_grid_minor_y=element_blank(),
+        legend_position="none",
+        plot_title=element_text(face="bold", size=22 / 1.5),
+        plot_subtitle=element_text(face="light", size=12 / 1.5),
+        plot_title_position="plot",
+    )
+    # labels and annotations
+    + labs(
+        x="",
+        y="",
+        title="Net favourability gap between Tories and Labour is at\nlowest level since September 2021, though both trail\nReform UK",
+        subtitle="Do you have a favourable or unfavourable opinion of the following? [Net score]\n",
+    )
+    + annotate(
+        geom="segment",
+        x=datetime(2025, 8, 15),
+        xend=datetime(2025, 9, 5),
+        y=-37,
+        yend=-35,
+        linetype="dotted",
+        color="#c20800",
+    )
+    + annotate(
+        geom="segment",
+        x=datetime(2025, 8, 15),
+        xend=datetime(2025, 9, 5),
+        y=-39,
+        yend=-41,
+        linetype="dotted",
+        color="#003cab",
+    )
+)
+```
+
+## Leader Favourability, August 2025 (Bar Charts)
+
+This next step of plots are quite appealing barchars showing overall favourability for different national and international political figures by UK political affiliation. We might call these kinds of bars 'small multiples' and, on the face of them, they look quite simple! Each combination of politician and political affiliation gets a favourable bar and an unfavourable bar. But these plots have quite a lot of features that add some challenge to recreation with `plotnine` (or, even, `ggplot2`):
+
+- You could create a `facet_grid()`, but the "row" labels are on top of each row, not to the left or right of it.
+
+- There are direct value labels, but whether they are to the right of the bar or left aligned to the whole plotting area depends on the value being presented.
+
+- When the direct value labels are on top of the bar, they need to be a colour with sufficient contrast to be read.
+
+- The plots have overall titles and, in one instance, a caption.
+
+So, the strategy here is to actually create multiple individual plots and then assemble them together. `plotnine` has a basic implementation of some of the functionality of R's [patchwork](https://patchwork.data-imaginist.com/), which lets you assemble plots with simple mathematical operators like `+`, `|` and `/`.
+
+Once again we've defined a function. Some notes:
+
+- The `is_green_only` argument exists because there's a specific plot which only contains two categories (green voters vs all britons) which affects some of the internal plotting parameters like how much to nudge labels by and the colours to use.
+
+- We use multiple `geom_text()` calls - one for labels below a certian threshold that go to the right of the bar, and one for labels above that threshold that are left-aligned on the whole plot. In the former, the colour is a dark grey. For the latter, the colour needs to vary based on the political party, so they are mapped to a variable. We create a colour `scale` that's purely for the text colour. This is done manually, but one could imagine writing a function to pick the "best contrast" for the party colours (in R I'd use [prismatic::best_contrast()](https://emilhvitfeldt.github.io/prismatic/reference/best_contrast.html) for this).
+
+- I've used `coord_flip()`. In `ggplot2` the plot automatically detects what you're trying to do with bars/boxplots/etc. and points them in the correct direction, here I found I needed to have the continuous variable be on the "y" for `geom_col()` and then flip the coordinate after-the-fact.
+
+- The politician's name is used as a subtitle, which will make sense when multiples of these plots are put together!
+
+```{python}
+def plot_leader_favourability(data, who, is_green_only=False):
+    plot_data = data.filter(pl.col("who") == who)
+
+    # Set thresholds and colors based on plot type
+    if is_green_only:
+        text_threshold = 5
+        text_y_pos = 1
+        nudge_y = 1
+        fill_colors = {"All Britons": "#9f29ff", "2024 Green voters": "#31caa8"}
+        text_colors = {"All Britons": "white", "2024 Green voters": "#333333"}
+    else:
+        text_threshold = 30
+        text_y_pos = 5
+        nudge_y = 5
+        fill_colors = {
+            "All Britons": "#9f29ff",
+            "2024\nGreen": "#31caa8",
+            "2024\nLabour": "#c20800",
+            "2024\nLib Dem": "#ffba22",
+            "2024\nConservative": "#003cab",
+            "2024\nReform UK": "#06a6ee",
+        }
+        text_colors = {
+            "All Britons": "white",
+            "2024\nGreen": "#333333",
+            "2024\nLabour": "white",
+            "2024\nLib Dem": "#333333",
+            "2024\nConservative": "white",
+            "2024\nReform UK": "white",
+        }
+
+    plot = (
+        ggplot(plot_data, aes(y="value", x="what"))
+        + geom_col(aes(y=100), fill="#3333330d")
+        + geom_col(aes(fill="variable"))
+        + geom_text(
+            data=plot_data.filter(pl.col("value") > text_threshold),
+            mapping=aes(label="value", y=text_y_pos, color="variable"),
+            ha="left",
+            size=8,
+        )
+        + geom_text(
+            data=plot_data.filter(pl.col("value") <= text_threshold),
+            mapping=aes(label="value", y="value"),
+            ha="left",
+            size=8,
+            color="#333333",
+            nudge_y=nudge_y,
+        )
+        + coord_flip()
+        + facet_grid(cols="variable")
+        + scale_y_continuous(limits=[0, 100])
+        + scale_fill_manual(values=fill_colors)
+        + scale_color_manual(values=text_colors)
+        + theme_minimal()
+        + theme(
+            axis_text_x=element_blank(),
+            panel_grid=element_blank(),
+            legend_position="none",
+            axis_text_y=element_text(ha="left"),
+            strip_text=element_text(ha="left"),
+            plot_subtitle=element_text(face="bold", size=12 / 1.5),
+            plot_title_position="plot",
+        )
+        + labs(x="", y="", subtitle=who)
+    )
+
+    return plot
+```
+
+::: {.panel-tabset}
+
+### "Your Party" and Labour
+
+This plot compares the favourability of Keir Starmer to the fledgling left-wing "Your Party" run by Jeremy Corbyn and Zarah Sultana, both historically on the Labour hard-left.
+
+To construct the overall assembly title I created a dummy plot that is effectively only a title and subtitle, and added this to the plot assembly. Patchwork has the [plot_annotation()](https://patchwork.data-imaginist.com/reference/plot_annotation.html) function that doesn't seem to be mirrored in `plotnine` yet, so this was the workaround I found!
+
+```{python}
+your_party_leaders = (
+    pl.read_csv("assets\\data\\yougov_leftwing.csv")
+    .rename({"X.1": "who", "X.2": "what"})
+    .unpivot(index=["who", "what"], on=["All Britons", cs.starts_with("2024")])
+    .with_columns(pl.col("variable").str.replace("<br>", "\n"))
+    .with_columns(
+        pl.col("variable").cast(pl.Categorical),
+        pl.col("what").cast(pl.Enum(["Unfavourable", "Favourable"])),
+    )
+)
+
+(
+    ggplot()
+    + theme_void()
+    + labs(
+        title="How do Britons' attitudes towards Corbyn and Sultana\ncompare to their views on Starmer?",
+        subtitle="Do you have a favourable or unfavourable opinion of the following? %",
+    )
+    + theme(
+        plot_title=element_text(face="bold", size=22 / 1.5),
+        plot_subtitle=element_text(face="light", size=12 / 1.5),
+        plot_title_position="plot",
+        aspect_ratio=0.001,
+        plot_margin=0,
+    )
+) / plot_leader_favourability(
+    your_party_leaders, "Jeremy Corbyn"
+) / plot_leader_favourability(
+    your_party_leaders, "Zarah Sultana"
+) / plot_leader_favourability(
+    your_party_leaders, "Keir Starmer"
+)
+```
+
+### International Political Figures
+
+This plot is much the same as the domestic leaders, but shows various international political figures - President of Ukraine Volodymyr Zelenskyy, US President Donald Trump, US Vice President JD Vance, and President of Russia Vladimir Putin.
+
+```{python}
+international_leaders = (
+    pl.read_csv("assets\\data\\yougov_international.csv")
+    .rename({"X.1": "who", "X.2": "what"})
+    .unpivot(index=["who", "what"], on=["All Britons", cs.starts_with("2024")])
+    .with_columns(pl.col("variable").str.replace("<br>", "\n"))
+    .with_columns(
+        pl.col("variable").cast(pl.Categorical),
+        pl.col("what").cast(pl.Enum(["Unfavourable", "Favourable"])),
+    )
+)
+
+(
+    ggplot()
+    + theme_void()
+    + labs(
+        title="YouGov international favourability ratings, August 2025",
+        subtitle="Do you have a favourable or unfavourable opinion of the following? %",
+    )
+    + theme(
+        plot_title=element_text(face="bold", size=22 / 1.5),
+        plot_subtitle=element_text(face="light", size=12 / 1.5),
+        plot_title_position="plot",
+        aspect_ratio=0.001,
+        plot_margin=0,
+    )
+) / plot_leader_favourability(
+    international_leaders, "Volodymyr Zelenskyy (net +49)"
+) / plot_leader_favourability(
+    international_leaders, "Donald Trump (net -61)"
+) / plot_leader_favourability(
+    international_leaders, "JD Vance (net -55)"
+) / plot_leader_favourability(
+    international_leaders, "Vladimir Putin (net -86)"
+)
+```
+
+### Green Party Leadership
+
+At time of writing, a leaderhsip election was occurring in the UK Green Party, a our green, left-wing party which has historically had little representation in the House of Commons. Britons were surveyed on their opinions of various Green leadership figures (and a fictitious candidate to guage reflexive political opinions).
+
+As previously mentioned, this plot is cut from the same cloth as the others but the overall layout is somewhat different, hence the need for the different parameters to control label placement and so on. Here we add an additional mock caption to explain the non-existent Andrew Farmer MP. 
+
+```{python}
+green_party_leaders = (
+    pl.read_csv("assets\\data\\yougov_green.csv")
+    .rename({"X.1": "who", "X.2": "what"})
+    .unpivot(index=["who", "what"], on=["All Britons", cs.starts_with("2024")])
+    .with_columns(
+        pl.col("variable").cast(pl.Categorical),
+        pl.col("what").cast(pl.Enum(["Don't know", "Unfavourable", "Favourable"])),
+    )
+)
+
+(
+    ggplot()
+    + theme_void()
+    + labs(
+        title="Green leadership figures largely unknown, even by\nthose who have voted for the party",
+        subtitle="Do you have a favourable or unfavourable opinion of the following? %",
+    )
+    + theme(
+        plot_title=element_text(face="bold", size=22 / 1.5),
+        plot_subtitle=element_text(face="light", size=12 / 1.5),
+        plot_title_position="plot",
+        aspect_ratio=0.001,
+        plot_margin=0,
+    )
+) / plot_leader_favourability(
+    green_party_leaders, "Carla Denyer", is_green_only=True
+) / plot_leader_favourability(
+    green_party_leaders, "Adrian Ramsay", is_green_only=True
+) / plot_leader_favourability(
+    green_party_leaders, "Zack Polanski", is_green_only=True
+) / plot_leader_favourability(
+    green_party_leaders, "Ellie Chowns", is_green_only=True
+) / plot_leader_favourability(
+    green_party_leaders, "Andrew Farmer*", is_green_only=True
+) / (
+    ggplot()
+    + theme_void()
+    + labs(
+        caption="* Andrew Farmer is a fake politician, used to test how many respondents reflexively say they have an opinion of a\nnon-existent figure"
+    )
+    + theme(
+        plot_caption=element_text(ha="left", face="light", size=12 / 1.5),
+        plot_caption_position="plot",
+        aspect_ratio=0.001,
+        plot_margin=0,
+    )
+) + theme(figure_size=(7, 7))
+
+```
+
+:::
+
+## Other senior political figures, August 2025 (Stacked Bars)
+
+Frankly, this is where the wheels start falling off!
+
+This is a big summary stacked bar chart which shows a Favourable, Unfavourable and "Don't Know" score for a load of different political figures, both domestic and international. On first glance, you might assume we could do what we did for the previous bar charts. However, in this instance, the height of each "subplot" is different as the number of figures in each category are different, and having to adjust the heights of the different subplots would be very faffy. So we're just going to have to use a `facet` to get something approximating the original plot.
+
+In recent versions of `ggplot2` we could use `facet_wrap()` with one column of facets and a combination of the `space` and `scales` arguments to create something very similar to the YouGov plot. In older version of `ggplot2`, we could use `ggforce::facet_col()` to achieve much the same thing. No similar functionality seems to exist in `plotnine`, so we're going to stick with `facet_grid()` and live with having the subplot labels be on the right hand side of the plot.
+
+A couple of curious bugs or limitations of `plotnine` emerged when trying this:
+
+- I could not seem to left-align the facet labels if there were new lines (`\n`) within them.
+
+- Left-aligning the y-axis labels placed the start point in different places for the different facets.
+
+Anyway, the Python code below shares many of the same themes as the other plots, with some new strategies needed for this plot:
+
+- There's a lot of `pl.Enum()` to ensure categories appear in the correct order; this is similar to using `factor()` in R. To order the leaders by favourability was quite round-the-houses; in R I'd have used `forcats::fct_reorder()` to do it in one line.
+
+- To achieve the correct value labels I used `position_stack()` with the `vjust` argument. Very small value labels don't appear in the data, so I filtered the dataset within the `geom_text()` call. It's not possible to use a `nudge` argument with `position_stack()`, and adding a value to the data directly will throw off `position_stack()`s calculations, so I've cheated and just added a space (`" "`) to the beginning of the label.
+
+- The x scale extends to `101` - this isn't a funky Python counting thing this time, though - the YouGov plot has this ragged edge where, I imagine, values have been rounded and now don't always add up to `100`.
+
+```{python}
+#| column: body-outset-right
+# read the leaders dataset
+leaders = (
+    pl.read_csv("assets\\data\\yougov_politicians.csv")
+    .rename({"X.1": "category", "X.2": "who"})
+    .unpivot(["Favourable", "Don't know", "Unfavourable"], index=["category", "who"])
+    .with_columns(
+        # need to order the variable
+        pl.col("variable").cast(pl.Enum(["Unfavourable", "Don't know", "Favourable"])),
+        # Stack categories by replacing spaces with new lines, then order to match yougov plot
+        pl.col("category")
+        .str.replace_all(" ", "\n")
+        .cast(
+            pl.Enum(
+                ["Party\nleaders", "Other\nsenior\npoliticians", "Political\nparties"]
+            )
+        ),
+    )
+)
+
+# get the order of the leaders based on favourability
+ordered_leaders = (
+    leaders.filter(pl.col("variable") == "Favourable")
+    .sort("value")
+    .get_column("who")
+    .to_list()
+)
+
+# order the leaders column to by favourability
+leaders = leaders.with_columns(pl.col("who").cast(pl.Enum(ordered_leaders)))
+
+# construct plot
+(
+    ggplot(leaders, aes(y="value", x="who"))
+    # geometries
+    + geom_col(aes(fill="variable"))
+    + geom_text(
+        data=leaders.with_columns(
+            pl.when(pl.col("value") <= 3)
+            .then(pl.lit(""))
+            .otherwise(" " + pl.col("value").cast(pl.String))
+            .alias("value_str")
+        ),
+        mapping=aes(y="value", label="value_str", group="variable", color="variable"),
+        position=position_stack(vjust=0),
+        size=8,
+        ha="left",
+        show_legend=False,
+    )
+    # facet
+    + facet_grid(rows="category", scales="free_y", space="free")
+    # scales
+    + coord_flip()
+    + scale_fill_manual(
+        values={
+            "Favourable": "#9f29ff",
+            "Don't know": "#ccd1db",
+            "Unfavourable": "#ff412c",
+        },
+        breaks=["Favourable", "Don't know", "Unfavourable"],
+    )
+    + scale_color_manual(
+        values={
+            "Favourable": "white",
+            "Don't know": "#333333",
+            "Unfavourable": "white",
+        }
+    )
+    + scale_y_continuous(limits=[0, 101])
+    # themes
+    + theme_minimal()
+    + theme(
+        axis_text_x=element_blank(),
+        panel_grid=element_blank(),
+        legend_position="top",
+        axis_text_y=element_text(ha="left"),
+        strip_text=element_text(ha="left", face="bold", rotation=0),
+        plot_title=element_text(face="bold", size=22 / 1.5),
+        plot_subtitle=element_text(face="light", size=12 / 1.5),
+        plot_title_position="plot",
+        plot_caption=element_text(ha="left", face="light", size=12 / 1.5),
+        plot_caption_position="plot",
+        panel_spacing=0.05,
+        figure_size=(7, 7),
+    )
+    # labels
+    + labs(
+        x="",
+        y="",
+        fill="",
+        title="YouGov political favourability ratings, August 2025",
+        subtitle="Do you have a favourable or unfavourable opinion of the following? %",
+        caption="* Andrew Farmer is a fake politician, used to test how many respondents reflexively say they have an opinion of a\nnon-existent figure",
+    )
+)
+```
+
+Now these limitations and shortcomings are somewhat frustrating and, just to get this as a "win", I have also produced this final plot from the article in R's `ggplot2` below. Two points to note here, though:
+
+- `plotnine` is relatively new, so its no surprise it can't do everything `ggplot2` can. `ggplot2` is old enough to drink in my country, whereas `plotnine` is only half-way through primary school, so its quite impressive that `plotnine` can get as close as it does on its own.
+
+- The `ggplot2` implementation still doesn't *quite* look right - the category labels aren't aligned with the plot. You can get part of the way there with the arguably off-label move of passing a negative value to `hjust` in `theme(strip.text)`, or could split the plots up and `patchwork` them back together (although you'd need to do the maths on the bar heights so they're all consistent, and again that's not convenient).
+
+::: {.callout-tip collapse="true" appearance="simple"}
+
+### Let's see it in R
+
+```r
+library(ggplot2)
+
+readr::read_csv("assets/data/yougov_politicians.csv") |>
+  dplyr::rename(category = X.1, who = X.2) |>
+  tidyr::pivot_longer(-(1:2)) |>
+  dplyr::mutate(
+    favourable = ifelse(name == "Favourable", value, NA),
+    who = forcats::fct_reorder(who, favourable),
+    name = factor(name, c("Unfavourable", "Don't know", "Favourable")),
+    category = factor(category, c("Party leaders", "Other senior politicians", "Political parties"))
+  ) |>
+  ggplot(aes(x = value, y = who)) +
+  geom_col(aes(fill = name)) +
+  geom_text(
+    aes(label = ifelse(value < 5, "", paste(" ", value)), group = name, color = name),
+    hjust = 0,
+    position = position_stack(vjust = 0),
+    show.legend = FALSE
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(hjust = 0),
+    axis.text.x = element_blank(),
+    strip.text = element_text(hjust = 0, face = "bold"),
+    strip.clip = "off",
+    panel.grid = element_blank(),
+    legend.position = "top",
+    legend.justification = "left",
+    plot.title = element_text(size = 22, face = "bold"),
+    plot.subtitle = element_text(size = 12), 
+    plot.title.position = "plot",
+    plot.caption = element_text(size = 10, hjust = 0, face = "italic"),
+    plot.caption.position = "plot"
+  ) +
+  facet_wrap(vars(category), scales = "free_y", space = "free_y") +
+  coord_cartesian(clip = "off") +
+  scale_x_continuous(expand = expansion()) +
+  labs(
+    y = NULL,
+    x = NULL,
+    fill = NULL,
+    title = "YouGov political favourability ratings, August 2025",
+    subtitle = "Do you have a favourable or unfavourable opinion of the following? %",
+    caption = "* Andrew Farmer is a fake politician, used to test how many respondents reflexively say they have an opinion of a non-\nexistent figure"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Favourable" = "#9f29ff",
+      "Don't know" = "#ccd1db",
+      "Unfavourable" = "#ff412c"
+    ),
+    breaks = c("Favourable", "Don't know", "Unfavourable")
+  ) +
+  scale_color_manual(
+    values = c(
+      "Favourable" = "white",
+      "Don't know" = "#333333",
+      "Unfavourable" = "white"
+    ),
+    breaks = c("Favourable", "Don't know", "Unfavourable")
+  )
+
+ggsave("assets/media/R_plot.png", width = 8, height = 10, dpi = 300, device = "png")
+```
+
+![](assets/media/R_plot.png)
+
+:::
+
+# Wrap-up
+
+Good news - that's all of the plots! To close, I just want to give a few thoughts to summarise as an R user coming to `plotnine` and Python more generally:
+
+- The syntax of `plotnine` is truly almost identical to `ggplot2`, so it really is easy to move from one to the other. Yes, the odd argument is named slightly differently (e.g., `ha` and `va` to align text), but these instances are few and far between. Despite never really writing any proper Python in the past, between `plotnine` and `polars` it really wasn't a struggle. Speaking of...
+
+- `polars` feels nice to use in a way `pandas` never quite did. It really does *feel* close to `dplyr` - it just, by necessity, lacks the convenience brought by non-standard evaluation in R (e.g., needing to say `pl.with_columns(pl.col("x"))` rather than just `mutate(x)`).
+
+- One of the best things about `ggplot2` is its extensibility: the ecosystem of custom stats, geoms, facets, and scales gives you an incredible range of options for building exactly the plots you need. I'm not yet sure how extensible plotnine is, but I imagine many of these capabilities will arrive in time.
+
+- Speaking as someone who works with a lot of weather data, I'd love `coord_polar()` to come to `plotnine` so I can make a wind rose, please! 🙂
+
+- When learning a new tool, the challenge isn't just understanding how it works - it's also figuring out what to do with it. Recreating existing visualisations, especially those based on freely available data (like YouGov's), is a great way to cut through that problem. You have a clear objective, real data, and a concrete end result to aim for.
