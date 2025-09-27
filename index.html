@@ -2341,14 +2341,14 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 <li><p>Naturally, we’ll import <code>plotnine</code> for our plots.</p></li>
 <li><p>Finally, we’ll import <code>datetime</code> as we’ll be working with dates and will need to construct and manipulate them.</p></li>
 </ul>
-<div id="e9e3f3fb" class="cell" data-execution_count="1">
+<div id="1c4f3bec" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars.selectors <span class="im">as</span> cs</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine <span class="im">import</span> <span class="op">*</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’re also going to define a function from the off. It takes a load of dates. The first time it sees a new year, it’ll create a month-year label. The next time it sees the same year, it’ll just create a month label. This works near enough the same as <code>scales::label_date_short()</code> in R, which I don’t believe is implemented in <code>plotnine</code>!</p>
-<div id="ac259f64" class="cell" data-execution_count="2">
+<div id="71bd8eb5" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> month_labels(dates):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> []</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    seen_years <span class="op">=</span> <span class="bu">set</span>()</span>
@@ -2406,7 +2406,7 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 <li><p>Various <code>theme()</code> options are added. Notably the legend is removed with <code>legend_position</code>, and <code>plot_title_position</code> is set to <code>&quot;plot&quot;</code>. This second argument is quite subtle, but it makes the title sit on top of the y-axis labels rather than be aligned with the actual plotting area.</p></li>
 </ul>
 <p>Have a look in each tab to see the plots.</p>
-<div id="53b26f08" class="cell" data-execution_count="3">
+<div id="60c9f756" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_individual_favourability(who, <span class="bu">file</span>, start_date, extra_sep<span class="op">=</span><span class="dv">0</span>):</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># read data into python</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    plot_data <span class="op">=</span> (</span>
@@ -2512,7 +2512,7 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 <div class="tab-content page-columns page-full">
 <div id="tabset-1-1" class="tab-pane active page-columns page-full" role="tabpanel" aria-labelledby="tabset-1-1-tab">
 <p>Keir Starmer is our current Prime Minister and the leader of the nominally centre-left Labour Party. Since the election his favourability rating has been decreasing, although it has remained relatively stable in the recent months.</p>
-<div id="ed7d3efa" class="cell page-columns page-full" data-execution_count="4">
+<div id="4a510ff7" class="cell page-columns page-full" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>plot_individual_favourability(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Keir Starmer&quot;</span>, <span class="st">&quot;assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_keir.csv&quot;</span>, start_date<span class="op">=</span>datetime(<span class="dv">2024</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -2527,7 +2527,7 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 </div>
 <div id="tabset-1-2" class="tab-pane page-columns page-full" role="tabpanel" aria-labelledby="tabset-1-2-tab">
 <p>Nigel Farage is the leader of the new right-wing populist Reform UK Party. While Reform UK is a young party with very few MPs, it has had recent success in local elections and has received a lot of media attention. Nigel Farage’s favourability has been relatively stable since the general election.</p>
-<div id="abfc7b22" class="cell page-columns page-full" data-execution_count="5">
+<div id="71d81e54" class="cell page-columns page-full" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plot_individual_favourability(</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Nigel Farage&quot;</span>, <span class="st">&quot;assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_nigel.csv&quot;</span>, start_date<span class="op">=</span>datetime(<span class="dv">2024</span>, <span class="dv">6</span>, <span class="dv">1</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -2543,7 +2543,7 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 <div id="tabset-1-3" class="tab-pane page-columns page-full" role="tabpanel" aria-labelledby="tabset-1-3-tab">
 <p>Kemi Badenoch is the Leader of the Opposition as well as the leader of the right-wing Conservative Party. The Conservatives (or ‘Tories’) significantly lost the last general election under the leadership of Rishi Sunak to the Labour Party after 14 years in power. Kemi Badenoch succeeded Sunak a few months later.</p>
 <p>Kemi’s plot has an extra vertical annotation, which lets us take advantage of <code>plotnine</code>’s capability for “post-hoc” plot tweaking. As our function returns a <code>plotnine</code> object, we can add additional <code>geom_vline()</code>s and <code>annotate()</code>s to create a marker for the date at which she took over the Conservative party.</p>
-<div id="64d3ffb8" class="cell page-columns page-full" data-execution_count="6">
+<div id="7fe8392b" class="cell page-columns page-full" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    plot_individual_favourability(</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Kemi Badenoch&quot;</span>,</span>
@@ -2576,7 +2576,7 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 <div id="tabset-1-4" class="tab-pane page-columns page-full" role="tabpanel" aria-labelledby="tabset-1-4-tab">
 <p>Ed Davey is the leader of the third biggest party in the House of Commons, the more centrist Liberal Democrats. After a few years in the wilderness after an unfortunate coalition with the Tories, the Liberal Democrats performed well at the last general election, now having the largest proportion of seats in the Commons the Lib Dems have ever won.</p>
 <p>Ed Davey’s plot is interesting in that his “Unfavourable” and “Favourable” ratings are quite similar to one another. This is why we included the <code>extra_sep</code> argument in the plotting function; this adds a bit of padding between the two ratings to prevent them from overlapping. As in Kemi’s plot, we can use <code>annotate()</code> to add the short dashed lines to help label the data lines.</p>
-<div id="f95d46b0" class="cell page-columns page-full" data-execution_count="7">
+<div id="5ea4c122" class="cell page-columns page-full" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    plot_individual_favourability(</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Ed Davey&quot;</span>,</span>
@@ -2616,7 +2616,7 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 </div>
 <p>The last plot of this type is a “net favourablity” tracker, found near the bottom of the original article. This shows that Reform UK’s net favourability, while negative, is the highest when compared to Labour and the Conservatives, who both show very similar net favourability.</p>
 <p>This plot is broadly similar to the plots above, including the direct labels and the dotted lines seen on Ed Davey’s plot. This plot demonstrates another use of the <code>labels</code> argument of <code>scales</code> functions, which can override existing scale labels with any arbitrary strings. In this case, it is used to add the <code>±</code> symbol to “0” and the <code>+</code> symbols to positive numbers, which are not present by default.</p>
-<div id="4c89c780" class="cell page-columns page-full" data-execution_count="8">
+<div id="afdfbf6d" class="cell page-columns page-full" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read the &quot;main parties&quot; dataset</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>main_parties <span class="op">=</span> (</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(<span class="st">&quot;assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_tories_labour_reform.csv&quot;</span>)</span>
@@ -2748,7 +2748,7 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 </div>
 </div>
 </div>
-<p>This next step of plots are quite appealing barchars showing overall favourability for different national and international political figures by UK political affiliation. We might call these kinds of bars ‘small multiples’ and, on the face of them, they look quite simple! Each combination of politician and political affiliation gets a favourable bar and an unfavourable bar. But these plots have quite a lot of features that add some challenge to recreation with <code>plotnine</code> (or, even, <code>ggplot2</code>):</p>
+<p>This next collection of plots are quite appealing bar charts showing overall favourability for different national and international political figures by UK political affiliation. We might call these kinds of plots ‘small multiples’. On the face of them they look quite simple, but these plots have quite a lot of features that make recreation with <code>plotnine</code> (or even <code>ggplot2</code>) tricky:</p>
 <ul>
 <li><p>You could create a <code>facet_grid()</code>, but the “row” labels are on top of each row, not to the left or right of it.</p></li>
 <li><p>There are direct value labels, but whether they are to the right of the bar or left aligned to the whole plotting area depends on the value being presented.</p></li>
@@ -2759,11 +2759,11 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 <p>Once again we’ve defined a function. Some notes:</p>
 <ul>
 <li><p>The <code>is_green_only</code> argument exists because there’s a specific plot which only contains two categories (green voters vs all britons) which affects some of the internal plotting parameters like how much to nudge labels by and the colours to use.</p></li>
-<li><p>We use multiple <code>geom_text()</code> calls - one for labels below a certian threshold that go to the right of the bar, and one for labels above that threshold that are left-aligned on the whole plot. In the former, the colour is a dark grey. For the latter, the colour needs to vary based on the political party, so they are mapped to a variable. We create a colour <code>scale</code> that’s purely for the text colour. This is done manually, but one could imagine writing a function to pick the “best contrast” for the party colours (in R I’d use <a href="https://emilhvitfeldt.github.io/prismatic/reference/best_contrast.html">prismatic::best_contrast()</a> for this).</p></li>
-<li><p>I’ve used <code>coord_flip()</code>. In <code>ggplot2</code> the plot automatically detects what you’re trying to do with bars/boxplots/etc. and points them in the correct direction, here I found I needed to have the continuous variable be on the “y” for <code>geom_col()</code> and then flip the coordinate after-the-fact.</p></li>
+<li><p>We use multiple <code>geom_text()</code> calls - one for labels below a certian threshold that go to the right of the bar, and one for labels above that threshold that are left-aligned on the whole plot. In the former, the colour is a dark grey. For the latter, the colour needs to vary based on the political party, so it is mapped to a variable. We create a colour <code>scale</code> that’s purely for the text colour. This is done manually, but one could imagine writing a function to pick the “best contrast” for the party colours (in R I’d use <a href="https://emilhvitfeldt.github.io/prismatic/reference/best_contrast.html"><code>prismatic::best_contrast()</code></a> for this; I’m sure there’ll be a Python equivalent).</p></li>
+<li><p>I’ve used <code>coord_flip()</code>. In <code>ggplot2</code> the plot automatically detects the orientation of bars/boxplots/etc.; here I found I needed to have the continuous variable be on the “y” for <code>geom_col()</code> and then flip the coordinate after-the-fact.</p></li>
 <li><p>The politician’s name is used as a subtitle, which will make sense when multiples of these plots are put together!</p></li>
 </ul>
-<div id="5b7ec585" class="cell" data-execution_count="9">
+<div id="5a328487" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_leader_favourability(data, who, is_green_only<span class="op">=</span><span class="va">False</span>):</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    plot_data <span class="op">=</span> data.<span class="bu">filter</span>(pl.col(<span class="st">&quot;who&quot;</span>) <span class="op">==</span> who)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2838,8 +2838,8 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 <div class="tab-content">
 <div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
 <p>This plot compares the favourability of Keir Starmer to the fledgling left-wing “Your Party” run by Jeremy Corbyn and Zarah Sultana, both historically on the Labour hard-left.</p>
-<p>To construct the overall assembly title I created a dummy plot that is effectively only a title and subtitle, and added this to the plot assembly. Patchwork has the <a href="https://patchwork.data-imaginist.com/reference/plot_annotation.html">plot_annotation()</a> function that doesn’t seem to be mirrored in <code>plotnine</code> yet, so this was the workaround I found!</p>
-<div id="7bcf489d" class="cell" data-execution_count="10">
+<p>To construct the overall assembly title I created a dummy plot that is effectively only a title and subtitle, and added this to the plot assembly. Patchwork has the <a href="https://patchwork.data-imaginist.com/reference/plot_annotation.html"><code>plot_annotation()</code></a> function that doesn’t seem to be mirrored in <code>plotnine</code> yet, so this was the workaround I found!</p>
+<div id="b9f41ce8" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>your_party_leaders <span class="op">=</span> (</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(<span class="st">&quot;assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_leftwing.csv&quot;</span>)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">&quot;X.1&quot;</span>: <span class="st">&quot;who&quot;</span>, <span class="st">&quot;X.2&quot;</span>: <span class="st">&quot;what&quot;</span>})</span>
@@ -2883,7 +2883,7 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 </div>
 <div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
 <p>This plot is much the same as the domestic leaders, but shows various international political figures - President of Ukraine Volodymyr Zelenskyy, US President Donald Trump, US Vice President JD Vance, and President of Russia Vladimir Putin.</p>
-<div id="b182f2cc" class="cell" data-execution_count="11">
+<div id="3f54a9e8" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>international_leaders <span class="op">=</span> (</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(<span class="st">&quot;assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_international.csv&quot;</span>)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">&quot;X.1&quot;</span>: <span class="st">&quot;who&quot;</span>, <span class="st">&quot;X.2&quot;</span>: <span class="st">&quot;what&quot;</span>})</span>
@@ -2928,9 +2928,9 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 </div>
 </div>
 <div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
-<p>At time of writing, a leaderhsip election was occurring in the UK Green Party, a our green, left-wing party which has historically had little representation in the House of Commons. Britons were surveyed on their opinions of various Green leadership figures (and a fictitious candidate to guage reflexive political opinions).</p>
-<p>As previously mentioned, this plot is cut from the same cloth as the others but the overall layout is somewhat different, hence the need for the different parameters to control label placement and so on. Here we add an additional mock caption to explain the non-existent Andrew Farmer MP.</p>
-<div id="62423bc5" class="cell" data-execution_count="12">
+<p>At the original time of writing of the YouGov article, a leadership election was occurring in the UK Green Party; our green, left-wing party which has historically had little representation in the House of Commons. Britons were surveyed on their opinions of various Green leadership figures (and a fictitious candidate to guage reflexive political opinions).</p>
+<p>This plot is cut from the same cloth as the others but the overall layout is somewhat different, hence the need for the different parameters to control label placement and so on. Here we add an additional mock caption to explain the non-existent Andrew Farmer MP.</p>
+<div id="2ce0139d" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>green_party_leaders <span class="op">=</span> (</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(<span class="st">&quot;assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_green.csv&quot;</span>)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">&quot;X.1&quot;</span>: <span class="st">&quot;who&quot;</span>, <span class="st">&quot;X.2&quot;</span>: <span class="st">&quot;what&quot;</span>})</span>
@@ -3009,12 +3009,12 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 </div>
 </div>
 <p>Frankly, this is where the wheels start falling off!</p>
-<p>This is a big summary stacked bar chart which shows a Favourable, Unfavourable and “Don’t Know” score for a load of different political figures, both domestic and international. On first glance, you might assume we could do what we did for the previous bar charts. However, in this instance, the height of each “subplot” is different as the number of figures in each category are different, and having to adjust the heights of the different subplots would be very faffy. So we’re just going to have to use a <code>facet</code> to get something approximating the original plot.</p>
+<p>This is a big summary stacked bar chart which shows a Favourable, Unfavourable and “Don’t Know” score for a load of different political figures, both domestic and international. On first glance, you might assume we could do what we did for the previous bar charts. However, the height of each “subplot” would be different as the numbers of figures in each category are different. Adjusting the heights of the different subplots would be difficult, so we’re just going to have to use <code>facet</code> function to get something approximating the original plot.</p>
 <p>In recent versions of <code>ggplot2</code> we could use <code>facet_wrap()</code> with one column of facets and a combination of the <code>space</code> and <code>scales</code> arguments to create something very similar to the YouGov plot. In older version of <code>ggplot2</code>, we could use <code>ggforce::facet_col()</code> to achieve much the same thing. No similar functionality seems to exist in <code>plotnine</code>, so we’re going to stick with <code>facet_grid()</code> and live with having the subplot labels be on the right hand side of the plot.</p>
 <p>A couple of curious bugs or limitations of <code>plotnine</code> emerged when trying this:</p>
 <ul>
 <li><p>I could not seem to left-align the facet labels if there were new lines (<code>\n</code>) within them.</p></li>
-<li><p>Left-aligning the y-axis labels placed the start point in different places for the different facets.</p></li>
+<li><p>Left-aligning the y-axis labels placed the start point in different places for the different facets. This isn’t ideal and makes the plot look less cohesive, and obviously doesn’t match YouGov’s formatting.</p></li>
 </ul>
 <p>Anyway, the Python code below shares many of the same themes as the other plots, with some new strategies needed for this plot:</p>
 <ul>
@@ -3022,7 +3022,7 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 <li><p>To achieve the correct value labels I used <code>position_stack()</code> with the <code>vjust</code> argument. Very small value labels don’t appear in the data, so I filtered the dataset within the <code>geom_text()</code> call. It’s not possible to use a <code>nudge</code> argument with <code>position_stack()</code>, and adding a value to the data directly will throw off <code>position_stack()</code>s calculations, so I’ve cheated and just added a space (<code>&quot; &quot;</code>) to the beginning of the label.</p></li>
 <li><p>The x scale extends to <code>101</code> - this isn’t a funky Python counting thing this time, though - the YouGov plot has this ragged edge where, I imagine, values have been rounded and now don’t always add up to <code>100</code>.</p></li>
 </ul>
-<div id="7b329648" class="cell page-columns page-full" data-execution_count="13">
+<div id="4c86bce4" class="cell page-columns page-full" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read the leaders dataset</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>leaders <span class="op">=</span> (</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(<span class="st">&quot;assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_politicians.csv&quot;</span>)</span>
@@ -3217,7 +3217,7 @@ div.callout-yougov.callout-style-default .callout-icon::before, div.callout-youg
 <ul>
 <li><p>The syntax of <code>plotnine</code> is truly almost identical to <code>ggplot2</code>, so it really is easy to move from one to the other. Yes, the odd argument is named slightly differently (e.g., <code>ha</code> and <code>va</code> to align text), but these instances are few and far between. Despite never really writing any proper Python in the past, between <code>plotnine</code> and <code>polars</code> it really wasn’t a struggle. Speaking of…</p></li>
 <li><p><code>polars</code> feels nice to use in a way <code>pandas</code> never quite did. It really does <em>feel</em> close to <code>dplyr</code> - it just, by necessity, lacks the convenience brought by non-standard evaluation in R (e.g., needing to say <code>pl.with_columns(pl.col(&quot;x&quot;))</code> rather than just <code>mutate(x)</code>).</p></li>
-<li><p>One of the best things about <code>ggplot2</code> is its extensibility: the ecosystem of custom stats, geoms, facets, and scales gives you an incredible range of options for building exactly the plots you need. I’m not yet sure how extensible plotnine is, but I imagine many of these capabilities will arrive in time.</p></li>
+<li><p>One of the best things about <code>ggplot2</code> is its extensibility: the ecosystem of custom stats, geoms, facets, and scales gives you an incredible range of options for building exactly the plots you need. I’m not yet sure how extensible <code>plotnine</code> is, but I imagine many of these capabilities will arrive in time.</p></li>
 <li><p>Speaking as someone who works with a lot of weather data, I’d love <code>coord_polar()</code> to come to <code>plotnine</code> so I can make a wind rose, please! 🙂</p></li>
 <li><p>When learning a new tool, the challenge isn’t just understanding how it works - it’s also figuring out what to do with it. Recreating existing visualisations, especially those based on freely available data (like YouGov’s), is a great way to cut through that problem. You have a clear objective, real data, and a concrete end result to aim for.</p></li>
 </ul>
