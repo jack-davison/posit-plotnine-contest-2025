@@ -2,7 +2,7 @@
  Posit `plotnine` Contest 2025 Submission
 </h2>
 <h1 align="center">
-"<a href="https://jack-davison.github.io/posit-plotnine-contest-2025/">YouGov Visualisations in Python</a>"<br>Recreating Political Favourability Graphics with <code>plotnine</code>
+<a href="https://jack-davison.github.io/posit-plotnine-contest-2025/">YouGov Visualisations in Python</a><br>Recreating Political Favourability Graphics with <code>plotnine</code>
 </h1>
 
 <a href="https://jack-davison.github.io/posit-plotnine-contest-2025/"><div align="center"><img width="800" src="./assets/media/banner.png"/></div></a>
