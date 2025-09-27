@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.550">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jack Davison">
+<meta name="dcterms.date" content="2025-09-27">
+
+<title>Recreating YouGov Plots in plotnine</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="index_files/libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="index_files/libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="index_files/libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<style>
+
+      .quarto-title-block .quarto-title-banner {
+        background: #ff6756;
+      }
+</style>
+
+
+</head>
+
+<body>
+
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Recreating YouGov Plots in plotnine</h1>
+            <p class="subtitle lead">Net favourability gap between Conservatives and Labour smallest in nearly four years: Political favourability ratings, August 2025</p>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p><a href="https://jack-davison.github.io/">Jack Davison, PhD</a> <a href="https://orcid.org/0000-0003-2653-6615" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 27, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#purpose" id="toc-purpose" class="nav-link" data-scroll-target="#purpose">Purpose</a></li>
+  <li><a href="#about-me" id="toc-about-me" class="nav-link" data-scroll-target="#about-me">About Me</a></li>
+  </ul></li>
+  <li><a href="#data-visualisation" id="toc-data-visualisation" class="nav-link" data-scroll-target="#data-visualisation">Data Visualisation</a>
+  <ul class="collapse">
+  <li><a href="#set-up" id="toc-set-up" class="nav-link" data-scroll-target="#set-up">Set-Up</a></li>
+  <li><a href="#leader-favourability-trends-line-charts" id="toc-leader-favourability-trends-line-charts" class="nav-link" data-scroll-target="#leader-favourability-trends-line-charts">Leader Favourability Trends (Line Charts)</a></li>
+  <li><a href="#leader-favourability-august-2025-bar-charts" id="toc-leader-favourability-august-2025-bar-charts" class="nav-link" data-scroll-target="#leader-favourability-august-2025-bar-charts">Leader Favourability, August 2025 (Bar Charts)</a></li>
+  <li><a href="#other-senior-political-figures-august-2025-stacked-bars" id="toc-other-senior-political-figures-august-2025-stacked-bars" class="nav-link" data-scroll-target="#other-senior-political-figures-august-2025-stacked-bars">Other senior political figures, August 2025 (Stacked Bars)</a></li>
+  </ul></li>
+  <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap-up</a></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+</div>
+<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+
+
+
+
+
+<section id="introduction" class="level1 page-columns page-full">
+<h1>Introduction</h1>
+<p><em>This document is a submission for <a href="https://github.com/has2k1/plotnine/discussions/972">Posit’s 2025 Plotnine Contest</a>.</em></p>
+<div class="column-page">
+<p><img src="assets/media/banner.png" class="nolightbox img-fluid"></p>
+</div>
+<section id="purpose" class="level2">
+<h2 class="anchored" data-anchor-id="purpose">Purpose</h2>
+<p>This page includes attempted one-to-one recreations of the visualisations in <a href="https://yougov.co.uk/politics/articles/52795-political-favourability-ratings-august-2025">“Net favourability gap between Conservatives and Labour smallest in nearly four years”</a> in Python and plotnine, originally published by <a href="https://yougov.co.uk/people/dylan.difford">Dylan Difford</a>, a Junior Data Journalist at YouGov, on August 19, 2025. It shows how many of YouGov’s effective data visualisations can be recreated using the plotnine Python library.</p>
+<p>YouGov describes itself as:</p>
+<blockquote class="blockquote">
+<p>…an international online research data and analytics technology group. Our mission is to offer unparalleled insight into what the world thinks.</p>
+<p>At the core of our platform is an ever-growing source of connected consumer data that has developed daily over our 20 years of operation. We call it living data. All of our products and services draw upon this detailed understanding of our 29+ million registered panel members to deliver accurate, actionable consumer insights.</p>
+</blockquote>
+<p>While YouGov collects and vends data relating to a myriad of topics, there are many core data visualisations which crop up time and time again in their online articles. The article chosen for recreation shows some nice examples of typical YouGov visualisations, including line and bar charts. If you would like to recreate YouGov articles yourself, the site makes it particularly easy; all data can be obtained using the “Get the data” buttons at the bottom of each plot in a YouGov web article.</p>
+</section>
+<section id="about-me" class="level2">
+<h2 class="anchored" data-anchor-id="about-me">About Me</h2>
+<p>I am a senior consultant and data analyst working for an Environmental Consultancy in South Oxfordshire in the United Kingdom.</p>
+<p>My work typically involves writing dynamic reports, creating effective data visualisations, authoring Shiny web apps, writing and maintaining R packages, facilitating training workshops, and otherwise writing code to do interesting things with data.</p>
+<p>I’m a collaborator on the <a href="https://github.com/davidcarslaw/openair">{openair} project</a> and the lead developer on the <a href="https://github.com/davidcarslaw/openairmaps">{openairmaps}</a> R package.</p>
+<p>My main programming language is <strong>R</strong> and I’ve rarely used Python in anger, so consider this a warning that there will be some references to the R programming language throughout. If I’ve made some terrible Python faux-pas anywhere in this document, please let me know!</p>
+</section>
+</section>
+<section id="data-visualisation" class="level1 page-columns page-full">
+<h1>Data Visualisation</h1>
+<section id="set-up" class="level2">
+<h2 class="anchored" data-anchor-id="set-up">Set-Up</h2>
+<p>We’re going to start by loading some packages:</p>
+<ul>
+<li><p>We’ll do all of our data manipulation in <code>polars</code> - it’s fast and has an appealing syntax for an R user.</p></li>
+<li><p>To help a bit, we’ll also import <code>polars.selectors</code> - it’s our <code>tidyselect</code> equivalent.</p></li>
+<li><p>Naturally, we’ll import <code>plotnine</code> for our plots.</p></li>
+<li><p>Finally, we’ll import <code>datetime</code> as we’ll be working with dates and will need to construct and manipulate them.</p></li>
+</ul>
+<div id="9affc339" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars.selectors <span class="im">as</span> cs</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’re also going to define a function from the off. It takes a load of dates. The first time it sees a new year, it’ll create a month-year label. The next time it sees the same year, it’ll just create a month label. This works near enough the same as <code>scales::label_date_short()</code> in R, which I don’t believe is implemented in <code>plotnine</code>!</p>
+<div id="d17597db" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> month_labels(dates):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> []</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    seen_years <span class="op">=</span> <span class="bu">set</span>()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> d <span class="kw">in</span> dates:</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> d.year <span class="kw">not</span> <span class="kw">in</span> seen_years:</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>            labels.append(d.strftime(<span class="st">"</span><span class="ch">\n</span><span class="st">%b</span><span class="ch">\n</span><span class="st"> %Y"</span>))  <span class="co"># e.g. "Feb 2025"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>            seen_years.add(d.year)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>            labels.append(d.strftime(<span class="st">"</span><span class="ch">\n</span><span class="st">%b"</span>))  <span class="co"># e.g. "Mar"</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> labels</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As previously noted, all data were obtained using the “Get the data” buttons at the bottom of each plot in the YouGov web article. Their default names are just random numbers and letters, so I’ve taken the liberty to rename them to be something more evocative.</p>
+</section>
+<section id="leader-favourability-trends-line-charts" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="leader-favourability-trends-line-charts">Leader Favourability Trends (Line Charts)</h2>
+<p>The first class of charts we’ll recreate are the favourability trends. The original article has four - one for each of Keir Starmer, Nigel Farage, Kemi Badenoch and Ed Davies. The ‘Unfavourable’ trend is given in red, the ‘Favourable’ trend in purple, and some key milestones in vertical lines. The lines also get direct labels at their ends in lieu of a proper plot legend.</p>
+<p>As we’re making four very similar charts, I’m defining a function. First, it reads and manipulates our input data:</p>
+<ul>
+<li><p>The first chunk of this function uses the <code>file</code> argument to read a specific CSV and do some processing; the first column gets a name, the two favourable/unfavourable columns get stacked on top of one another, the date is formatted as a date, and the overall dataset is filtered to be from 2024. This last step is to match what is displayed in the YouGov graph; interestingly you get a lot more data in the download file than what is visualised.</p></li>
+<li><p>With this newly processed data, we create a separate polars DataFrame which just includes the final value for each of ‘favourable’ and ‘unfavourable’. We need this for the ‘direct labels’ at the end of the line charts.</p></li>
+<li><p>On the subject of the direct labels; the very last method applied in the first chunk of my function uses the <code>extra_sep</code> argument. As we’re using direct labels, if the ends of the lines are very close together these can potentially overlap one another. This argument lets us add a little extra spacing between the values.</p>
+<ul>
+<li><p>I happen to know that ‘unfavourable’ is always higher for these four politicians (and therefore wants that extra spacing <em>adding</em>) - if it was more variable I’d have to write something clever to find the higher of the two values and add to that one, but in this case we can hard-code it.</p></li>
+<li><p>There’s also a world in which <code>extra_sep</code> isn’t needed at all and it could auto-detect an appropriate gap to add if the two values are too close.</p></li>
+<li><p>We could also play around with a package like <a href="https://github.com/Phlya/adjustText">adjustText</a> (inspired by R’s <a href="https://ggrepel.slowkow.com/">ggrepel</a>) which can automatically reduce overlaps</p></li>
+<li><p>All that being said, here I’d like finer control over the output so we’re doing it by hand! Note that the adjusted values are saved as their own variable as we still need the <em>actual</em> values to plot the lines and label with.</p></li>
+</ul></li>
+</ul>
+<p>Then we construct our plot. The syntax is very very similar to R’s <code>ggplot2</code>, by design. There are some steps here that are worth further mention, however:</p>
+<ul>
+<li><p>The direct labels on the YouGov plots have a bold title (Favourable/Unfavourable) and a normal weight value label beneath them. To my knowledge, this requires two <code>geom_text()</code> calls - one with <code>fontweight="bold"</code> and the other without. I used <code>nudge_y</code> and <code>nudge_x</code> to ensure the labels are correctly placed relative to one another and the end of the line - the bold title is directly to the right, and the normal weight value below that. In R, we might use a package like <a href="https://marquee.r-lib.org/">marquee</a> to do this in one step.</p></li>
+<li><p>A few things about axis scales:</p>
+<ul>
+<li><p>The x- and y-axis scales can take a <code>range()</code> for the <code>breaks</code> argument as well as a list, which is convenient. One thing that totally caught me out as an R user was <code>range(0, 70, 10)</code> resolves to <code>[0, 10, 20, ..., 50, 60]</code> <strong>not</strong> <code>[0, 10, 20, ..., 60, 70]</code> - hence the use of <code>range(0, 71, 10)</code>. In R, <code>seq(0, 70, 10)</code> would include <code>70</code>.</p></li>
+<li><p>For the x-axis we use the <code>start_date</code> argument to specify a specific start date for that axis, as they vary between politicians.</p></li>
+<li><p>The <code>expand</code> argument is also used to surpress the automatic padding <code>plotnine</code> (and <code>ggplot2</code>) adds to axis ranges - <code>[0,0]</code> removes all of this, though the x-axis does retain some so that the direct labels are still readable.</p></li>
+<li><p>We also use out <code>month_labels</code> argument in <code>labels</code>. This works because <code>labels</code> can take any callable that recieves the axis breaks and then does whatever arbitrary thing you’d like to them, as long as it returns a label for plotting.</p></li>
+</ul></li>
+<li><p>Various <code>theme()</code> options are added. Notably the legend is removed with <code>legend_position</code>, and <code>plot_title_position</code> is set to <code>"plot"</code>. This second argument is quite subtle, but it makes the title sit on top of the y-axis labels rather than be aligned with the actual plotting area.</p></li>
+</ul>
+<p>Have a look in each tab to see the plots.</p>
+<div id="38c007c4" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_individual_favourability(who, <span class="bu">file</span>, start_date, extra_sep<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># read data into python</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    plot_data <span class="op">=</span> (</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        pl.read_csv(<span class="bu">file</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="co"># rename the first column to be 'date'</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        .rename({<span class="st">"X.1"</span>: <span class="st">"date"</span>})</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># pivot the table longer to stack the rankings</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        .unpivot([<span class="st">"Favourable"</span>, <span class="st">"Unfavourable"</span>], index<span class="op">=</span><span class="st">"date"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># coerce date to an actual date</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        .with_columns(pl.col(<span class="st">"date"</span>).<span class="bu">str</span>.to_datetime(<span class="st">"</span><span class="sc">%d</span><span class="st">/%m/%Y"</span>))</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># to match yougov article - filter for 2024</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        .<span class="bu">filter</span>(pl.col(<span class="st">"date"</span>).dt.year() <span class="op">&gt;=</span> <span class="dv">2024</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># if the fields are very close together, might need to nudge them further apart</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        .with_columns(</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            pl.when(pl.col(<span class="st">"variable"</span>) <span class="op">==</span> <span class="st">"Unfavourable"</span>)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>            .then(pl.col(<span class="st">"value"</span>) <span class="op">+</span> extra_sep)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>            .otherwise(pl.col(<span class="st">"value"</span>) <span class="op">-</span> extra_sep)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            .alias(<span class="st">"text_value"</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># get the final values in the data - needed for direct labels</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    max_dates <span class="op">=</span> plot_data.sort(<span class="st">"date"</span>).group_by(<span class="st">"variable"</span>).tail(<span class="dv">1</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># construct plot</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    plot <span class="op">=</span> (</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>        ggplot(plot_data, aes(x<span class="op">=</span><span class="st">"date"</span>, y<span class="op">=</span><span class="st">"value"</span>, color<span class="op">=</span><span class="st">"variable"</span>))</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># geometries</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> geom_vline(</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>            xintercept<span class="op">=</span>datetime(<span class="dv">2024</span>, <span class="dv">7</span>, <span class="dv">4</span>), linetype<span class="op">=</span><span class="st">"dotted"</span>, color<span class="op">=</span><span class="st">"#A6A6A6"</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> geom_line()</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>        <span class="co"># need two texts here - one bold for the variable, one normal for the value</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> geom_text(</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>            mapping<span class="op">=</span>aes(label<span class="op">=</span><span class="st">"variable"</span>, y<span class="op">=</span><span class="st">"text_value"</span>),</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>            data<span class="op">=</span>max_dates,</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>            show_legend<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>            ha<span class="op">=</span><span class="st">"left"</span>,</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>            nudge_x<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>            fontweight<span class="op">=</span><span class="st">"bold"</span>,</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>            size<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> geom_text(</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>            mapping<span class="op">=</span>aes(label<span class="op">=</span><span class="st">"value"</span>, y<span class="op">=</span><span class="st">"text_value"</span>),</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>            data<span class="op">=</span>max_dates,</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>            show_legend<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>            ha<span class="op">=</span><span class="st">"left"</span>,</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>            nudge_x<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>            nudge_y<span class="op">=-</span><span class="dv">3</span>,</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>            size<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>        <span class="co"># scales</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> scale_color_manual(</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>            values<span class="op">=</span>{<span class="st">"Favourable"</span>: <span class="st">"#9f29ff"</span>, <span class="st">"Unfavourable"</span>: <span class="st">"#e42119"</span>}</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> scale_y_continuous(limits<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">70</span>], breaks<span class="op">=</span><span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">71</span>, <span class="dv">10</span>), expand<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">0</span>])</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> scale_x_datetime(</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>            labels<span class="op">=</span>month_labels,</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>            date_breaks<span class="op">=</span><span class="st">"3 month"</span>,</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>            limits<span class="op">=</span>[start_date, datetime(<span class="dv">2025</span>, <span class="dv">12</span>, <span class="dv">1</span>)],</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>            expand<span class="op">=</span>[<span class="dv">0</span>, <span class="fl">0.1</span>],</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>        <span class="co"># themes</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> theme_minimal()</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> theme(</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>            axis_text_y<span class="op">=</span>element_text(color<span class="op">=</span><span class="st">"#A6A6A6"</span>),</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>            axis_text_x<span class="op">=</span>element_text(color<span class="op">=</span><span class="st">"#7B7B7B"</span>),</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>            panel_grid<span class="op">=</span>element_line(color<span class="op">=</span><span class="st">"#E8E8E8"</span>),</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>            panel_grid_major_x<span class="op">=</span>element_blank(),</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>            panel_grid_minor_x<span class="op">=</span>element_blank(),</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>            panel_grid_minor_y<span class="op">=</span>element_blank(),</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>            axis_line_x<span class="op">=</span>element_line(color<span class="op">=</span><span class="st">"#3e3f41"</span>),</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>            legend_position<span class="op">=</span><span class="st">"none"</span>,</span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>            plot_title<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"bold"</span>, size<span class="op">=</span><span class="dv">22</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>            plot_subtitle<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"light"</span>, size<span class="op">=</span><span class="dv">12</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>            plot_title_position<span class="op">=</span><span class="st">"plot"</span>,</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>        <span class="co"># labels &amp; annotations</span></span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> labs(</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>            x<span class="op">=</span><span class="st">""</span>,</span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>            y<span class="op">=</span><span class="st">""</span>,</span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>            title<span class="op">=</span>who <span class="op">+</span> <span class="st">" favourability tracker"</span>,</span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>            subtitle<span class="op">=</span><span class="st">"Do you have a favourable or unfavourable opinion of the following? ["</span></span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>            <span class="op">+</span> who</span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>            <span class="op">+</span> <span class="st">"] %</span><span class="ch">\n</span><span class="st">"</span>,</span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> annotate(</span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>            geom<span class="op">=</span><span class="st">"text"</span>,</span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>            x<span class="op">=</span>datetime(<span class="dv">2024</span>, <span class="dv">7</span>, <span class="dv">10</span>),</span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>            y<span class="op">=</span><span class="fl">2.5</span>,</span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>            label<span class="op">=</span><span class="st">"General election"</span>,</span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>            size<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>            ha<span class="op">=</span><span class="st">"left"</span>,</span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>            color<span class="op">=</span><span class="st">"#3e3f41"</span>,</span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>            fontstyle<span class="op">=</span><span class="st">"italic"</span>,</span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> plot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="tabset-margin-container"></div><div class="panel-tabset page-columns page-full">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" href="">Keir Starmer</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false" href="">Nigel Farage</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false" href="">Kemi Badenoch</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false" href="">Ed Davey</a></li></ul>
+<div class="tab-content page-columns page-full">
+<div id="tabset-1-1" class="tab-pane active page-columns page-full" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<p>Keir Starmer is our current Prime Minister and the leader of the nominally centre-left Labour Party. Since the election his favourability rating has been decreasing, although it has remained relatively stable in the recent months.</p>
+<div id="5a6dc4cb" class="cell page-columns page-full" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>plot_individual_favourability(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Keir Starmer"</span>, <span class="st">"assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_keir.csv"</span>, start_date<span class="op">=</span>datetime(<span class="dv">2024</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/cell-5-output-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-1"><img src="index_files/figure-html/cell-5-output-1.png" width="672" height="480" class="figure-img column-body-outset-right"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane page-columns page-full" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<p>Nigel Farage is the leader of the new right-wing populist Reform UK Party. While Reform UK is a young party with very few MPs, it has had recent success in local elections and has received a lot of media attention. Nigel Farage’s favourability has been relatively stable since the general election.</p>
+<div id="c5022833" class="cell page-columns page-full" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plot_individual_favourability(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Nigel Farage"</span>, <span class="st">"assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_nigel.csv"</span>, start_date<span class="op">=</span>datetime(<span class="dv">2024</span>, <span class="dv">6</span>, <span class="dv">1</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/cell-6-output-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-2"><img src="index_files/figure-html/cell-6-output-1.png" width="672" height="480" class="figure-img column-body-outset-right"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane page-columns page-full" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<p>Kemi Badenoch is the Leader of the Opposition as well as the leader of the right-wing Conservative Party. The Conservatives (or ‘Tories’) significantly lost the last general election under the leadership of Rishi Sunak to the Labour Party after 14 years in power. Kemi Badenoch succeeded Sunak a few months later.</p>
+<p>Kemi’s plot has an extra vertical annotation, which lets us take advantage of <code>plotnine</code>’s capability for “post-hoc” plot tweaking. As our function returns a <code>plotnine</code> object, we can add additional <code>geom_vline()</code>s and <code>annotate()</code>s to create a marker for the date at which she took over the Conservative party.</p>
+<div id="cf703eff" class="cell page-columns page-full" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    plot_individual_favourability(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Kemi Badenoch"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_kemi.csv"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        start_date<span class="op">=</span>datetime(<span class="dv">2024</span>, <span class="dv">5</span>, <span class="dv">12</span>),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># the function returns a plotnine object, so we can adjust it some more</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> geom_vline(xintercept<span class="op">=</span>datetime(<span class="dv">2024</span>, <span class="dv">10</span>, <span class="dv">31</span>), linetype<span class="op">=</span><span class="st">"dotted"</span>, color<span class="op">=</span><span class="st">"#A6A6A6"</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> annotate(</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        geom<span class="op">=</span><span class="st">"text"</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span>datetime(<span class="dv">2024</span>, <span class="dv">11</span>, <span class="dv">5</span>),</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        y<span class="op">=</span><span class="fl">1.5</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span><span class="st">"Becomes</span><span class="ch">\n</span><span class="st">Conservative leader"</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        size<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        ha<span class="op">=</span><span class="st">"left"</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        va<span class="op">=</span><span class="st">"bottom"</span>,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">"#3e3f41"</span>,</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        fontstyle<span class="op">=</span><span class="st">"italic"</span>,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/cell-7-output-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-3"><img src="index_files/figure-html/cell-7-output-1.png" width="672" height="480" class="figure-img column-body-outset-right"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-1-4" class="tab-pane page-columns page-full" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<p>Ed Davey is the leader of the third biggest party in the House of Commons, the more centrist Liberal Democrats. After a few years in the wilderness after an unfortunate coalition with the Tories, the Liberal Democrats performed well at the last general election, now having the largest proportion of seats in the Commons the Lib Dems have ever won.</p>
+<p>Ed Davey’s plot is interesting in that his “Unfavourable” and “Favourable” ratings are quite similar to one another. This is why we included the <code>extra_sep</code> argument in the plotting function; this adds a bit of padding between the two ratings to prevent them from overlapping. As in Kemi’s plot, we can use <code>annotate()</code> to add the short dashed lines to help label the data lines.</p>
+<div id="f02c723c" class="cell page-columns page-full" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    plot_individual_favourability(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Ed Davey"</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_ed.csv"</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        start_date<span class="op">=</span>datetime(<span class="dv">2024</span>, <span class="dv">5</span>, <span class="dv">12</span>),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        extra_sep<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> annotate(</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        geom<span class="op">=</span><span class="st">"segment"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span>datetime(<span class="dv">2025</span>, <span class="dv">8</span>, <span class="dv">15</span>),</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        xend<span class="op">=</span>datetime(<span class="dv">2025</span>, <span class="dv">8</span>, <span class="dv">22</span>, <span class="dv">12</span>),</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        y<span class="op">=</span><span class="dv">33</span>,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        yend<span class="op">=</span><span class="dv">35</span>,</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        linetype<span class="op">=</span><span class="st">"dotted"</span>,</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">"#e42119"</span>,</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> annotate(</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        geom<span class="op">=</span><span class="st">"segment"</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span>datetime(<span class="dv">2025</span>, <span class="dv">8</span>, <span class="dv">15</span>),</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        xend<span class="op">=</span>datetime(<span class="dv">2025</span>, <span class="dv">8</span>, <span class="dv">22</span>, <span class="dv">12</span>),</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>        y<span class="op">=</span><span class="dv">30</span>,</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>        yend<span class="op">=</span><span class="dv">28</span>,</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        linetype<span class="op">=</span><span class="st">"dotted"</span>,</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">"#9f29ff"</span>,</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/cell-8-output-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-4"><img src="index_files/figure-html/cell-8-output-1.png" width="672" height="480" class="figure-img column-body-outset-right"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>The last plot of this type is a “net favourablity” tracker, found near the bottom of the original article. This shows that Reform UK’s net favourability, while negative, is the highest when compared to Labour and the Conservatives, who both show very similar net favourability.</p>
+<p>This plot is broadly similar to the plots above, including the direct labels and the dotted lines seen on Ed Davey’s plot. This plot demonstrates another use of the <code>labels</code> argument of <code>scales</code> functions, which can override existing scale labels with any arbitrary strings. In this case, it is used to add the <code>±</code> symbol to “0” and the <code>+</code> symbols to positive numbers, which are not present by default.</p>
+<div id="bfa6f0e2" class="cell page-columns page-full" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read the "main parties" dataset</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>main_parties <span class="op">=</span> (</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(<span class="st">"assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_tories_labour_reform.csv"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">"X.1"</span>: <span class="st">"date"</span>})</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    .unpivot([<span class="st">"Conservative"</span>, <span class="st">"Labour"</span>, <span class="st">"Reform UK"</span>], index<span class="op">=</span><span class="st">"date"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    .with_columns(pl.col(<span class="st">"date"</span>).<span class="bu">str</span>.to_datetime(<span class="st">"</span><span class="sc">%d</span><span class="st">/%m/%Y"</span>))</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"value"</span>).is_not_null())</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># again, we need to nudge the data around a bit</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        pl.when(pl.col(<span class="st">"variable"</span>) <span class="op">==</span> <span class="st">"Labour"</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        .then(pl.col(<span class="st">"value"</span>) <span class="op">+</span> <span class="dv">2</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        .when(pl.col(<span class="st">"variable"</span>) <span class="op">==</span> <span class="st">"Conservative"</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        .then(pl.col(<span class="st">"value"</span>) <span class="op">-</span> <span class="dv">2</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>        .otherwise(pl.col(<span class="st">"value"</span>))</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        .alias(<span class="st">"text_value"</span>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="co"># needed for plotting</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>max_dates <span class="op">=</span> main_parties.sort(<span class="st">"date"</span>).group_by(<span class="st">"variable"</span>).tail(<span class="dv">1</span>)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co"># axis labels needed here! Needs "+" for positive values, and "+/-" for zero</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>numbers <span class="op">=</span> [</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"+</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">if</span> i <span class="op">&gt;</span> <span class="dv">0</span> <span class="cf">else</span> <span class="ss">f"±</span><span class="sc">{</span><span class="bu">abs</span>(i)<span class="sc">}</span><span class="ss">"</span> <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="op">-</span><span class="dv">60</span>, <span class="dv">21</span>, <span class="dv">10</span>)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="co"># construct plot</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    ggplot(main_parties, aes(x<span class="op">=</span><span class="st">"date"</span>, y<span class="op">=</span><span class="st">"value"</span>, color<span class="op">=</span><span class="st">"variable"</span>))</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># geometries</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> geom_hline(yintercept<span class="op">=</span><span class="dv">0</span>, color<span class="op">=</span><span class="st">"#3e3f41"</span>)</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> geom_line()</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> geom_text(</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>        mapping<span class="op">=</span>aes(label<span class="op">=</span><span class="st">"variable"</span>, y<span class="op">=</span><span class="st">"text_value"</span>),</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>        data<span class="op">=</span>max_dates,</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>        show_legend<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>        ha<span class="op">=</span><span class="st">"left"</span>,</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>        nudge_x<span class="op">=</span><span class="dv">30</span>,</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>        nudge_y<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>        fontweight<span class="op">=</span><span class="st">"bold"</span>,</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>        size<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> geom_text(</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>        mapping<span class="op">=</span>aes(label<span class="op">=</span><span class="st">"value"</span>, y<span class="op">=</span><span class="st">"text_value"</span>),</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>        data<span class="op">=</span>max_dates,</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>        show_legend<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>        ha<span class="op">=</span><span class="st">"left"</span>,</span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>        nudge_x<span class="op">=</span><span class="dv">30</span>,</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>        nudge_y<span class="op">=-</span><span class="dv">3</span>,</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>        size<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>    <span class="co"># scales</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> scale_x_datetime(</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>        date_breaks<span class="op">=</span><span class="st">"1 year"</span>,</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>        date_labels<span class="op">=</span><span class="st">"%b %Y"</span>,</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>        limits<span class="op">=</span>[datetime(<span class="dv">2020</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>), datetime(<span class="dv">2026</span>, <span class="dv">8</span>, <span class="dv">1</span>)],</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>        expand<span class="op">=</span>[<span class="dv">0</span>, <span class="fl">0.1</span>],</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> scale_y_continuous(</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>        limits<span class="op">=</span>(<span class="op">-</span><span class="dv">65</span>, <span class="dv">20</span>), breaks<span class="op">=</span><span class="bu">range</span>(<span class="op">-</span><span class="dv">60</span>, <span class="dv">21</span>, <span class="dv">10</span>), labels<span class="op">=</span>numbers, expand<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> scale_color_manual(</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>        values<span class="op">=</span>{<span class="st">"Reform UK"</span>: <span class="st">"#0082c7"</span>, <span class="st">"Labour"</span>: <span class="st">"#c20800"</span>, <span class="st">"Conservative"</span>: <span class="st">"#003cab"</span>}</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>    <span class="co"># themes</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme_minimal()</span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme(</span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>        axis_text_y<span class="op">=</span>element_text(color<span class="op">=</span><span class="st">"#A6A6A6"</span>),</span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>        axis_text_x<span class="op">=</span>element_text(color<span class="op">=</span><span class="st">"#7B7B7B"</span>),</span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>        panel_grid<span class="op">=</span>element_line(color<span class="op">=</span><span class="st">"#E8E8E8"</span>),</span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>        panel_grid_major_x<span class="op">=</span>element_blank(),</span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>        panel_grid_minor_x<span class="op">=</span>element_blank(),</span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>        panel_grid_minor_y<span class="op">=</span>element_blank(),</span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>        legend_position<span class="op">=</span><span class="st">"none"</span>,</span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>        plot_title<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"bold"</span>, size<span class="op">=</span><span class="dv">22</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>        plot_subtitle<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"light"</span>, size<span class="op">=</span><span class="dv">12</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>        plot_title_position<span class="op">=</span><span class="st">"plot"</span>,</span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>    <span class="co"># labels and annotations</span></span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> labs(</span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span><span class="st">""</span>,</span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a>        y<span class="op">=</span><span class="st">""</span>,</span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a>        title<span class="op">=</span><span class="st">"Net favourability gap between Tories and Labour is at</span><span class="ch">\n</span><span class="st">lowest level since September 2021, though both trail</span><span class="ch">\n</span><span class="st">Reform UK"</span>,</span>
+<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a>        subtitle<span class="op">=</span><span class="st">"Do you have a favourable or unfavourable opinion of the following? [Net score]</span><span class="ch">\n</span><span class="st">"</span>,</span>
+<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> annotate(</span>
+<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a>        geom<span class="op">=</span><span class="st">"segment"</span>,</span>
+<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span>datetime(<span class="dv">2025</span>, <span class="dv">8</span>, <span class="dv">15</span>),</span>
+<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a>        xend<span class="op">=</span>datetime(<span class="dv">2025</span>, <span class="dv">9</span>, <span class="dv">5</span>),</span>
+<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a>        y<span class="op">=-</span><span class="dv">37</span>,</span>
+<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a>        yend<span class="op">=-</span><span class="dv">35</span>,</span>
+<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a>        linetype<span class="op">=</span><span class="st">"dotted"</span>,</span>
+<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">"#c20800"</span>,</span>
+<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> annotate(</span>
+<span id="cb8-96"><a href="#cb8-96" aria-hidden="true" tabindex="-1"></a>        geom<span class="op">=</span><span class="st">"segment"</span>,</span>
+<span id="cb8-97"><a href="#cb8-97" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span>datetime(<span class="dv">2025</span>, <span class="dv">8</span>, <span class="dv">15</span>),</span>
+<span id="cb8-98"><a href="#cb8-98" aria-hidden="true" tabindex="-1"></a>        xend<span class="op">=</span>datetime(<span class="dv">2025</span>, <span class="dv">9</span>, <span class="dv">5</span>),</span>
+<span id="cb8-99"><a href="#cb8-99" aria-hidden="true" tabindex="-1"></a>        y<span class="op">=-</span><span class="dv">39</span>,</span>
+<span id="cb8-100"><a href="#cb8-100" aria-hidden="true" tabindex="-1"></a>        yend<span class="op">=-</span><span class="dv">41</span>,</span>
+<span id="cb8-101"><a href="#cb8-101" aria-hidden="true" tabindex="-1"></a>        linetype<span class="op">=</span><span class="st">"dotted"</span>,</span>
+<span id="cb8-102"><a href="#cb8-102" aria-hidden="true" tabindex="-1"></a>        color<span class="op">=</span><span class="st">"#003cab"</span>,</span>
+<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-104"><a href="#cb8-104" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/cell-9-output-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-5"><img src="index_files/figure-html/cell-9-output-1.png" width="672" height="480" class="figure-img column-body-outset-right"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="leader-favourability-august-2025-bar-charts" class="level2">
+<h2 class="anchored" data-anchor-id="leader-favourability-august-2025-bar-charts">Leader Favourability, August 2025 (Bar Charts)</h2>
+<p>This next step of plots are quite appealing barchars showing overall favourability for different national and international political figures by UK political affiliation. We might call these kinds of bars ‘small multiples’ and, on the face of them, they look quite simple! Each combination of politician and political affiliation gets a favourable bar and an unfavourable bar. But these plots have quite a lot of features that add some challenge to recreation with <code>plotnine</code> (or, even, <code>ggplot2</code>):</p>
+<ul>
+<li><p>You could create a <code>facet_grid()</code>, but the “row” labels are on top of each row, not to the left or right of it.</p></li>
+<li><p>There are direct value labels, but whether they are to the right of the bar or left aligned to the whole plotting area depends on the value being presented.</p></li>
+<li><p>When the direct value labels are on top of the bar, they need to be a colour with sufficient contrast to be read.</p></li>
+<li><p>The plots have overall titles and, in one instance, a caption.</p></li>
+</ul>
+<p>So, the strategy here is to actually create multiple individual plots and then assemble them together. <code>plotnine</code> has a basic implementation of some of the functionality of R’s <a href="https://patchwork.data-imaginist.com/">patchwork</a>, which lets you assemble plots with simple mathematical operators like <code>+</code>, <code>|</code> and <code>/</code>.</p>
+<p>Once again we’ve defined a function. Some notes:</p>
+<ul>
+<li><p>The <code>is_green_only</code> argument exists because there’s a specific plot which only contains two categories (green voters vs all britons) which affects some of the internal plotting parameters like how much to nudge labels by and the colours to use.</p></li>
+<li><p>We use multiple <code>geom_text()</code> calls - one for labels below a certian threshold that go to the right of the bar, and one for labels above that threshold that are left-aligned on the whole plot. In the former, the colour is a dark grey. For the latter, the colour needs to vary based on the political party, so they are mapped to a variable. We create a colour <code>scale</code> that’s purely for the text colour. This is done manually, but one could imagine writing a function to pick the “best contrast” for the party colours (in R I’d use <a href="https://emilhvitfeldt.github.io/prismatic/reference/best_contrast.html">prismatic::best_contrast()</a> for this).</p></li>
+<li><p>I’ve used <code>coord_flip()</code>. In <code>ggplot2</code> the plot automatically detects what you’re trying to do with bars/boxplots/etc. and points them in the correct direction, here I found I needed to have the continuous variable be on the “y” for <code>geom_col()</code> and then flip the coordinate after-the-fact.</p></li>
+<li><p>The politician’s name is used as a subtitle, which will make sense when multiples of these plots are put together!</p></li>
+</ul>
+<div id="d6e1b7ae" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_leader_favourability(data, who, is_green_only<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    plot_data <span class="op">=</span> data.<span class="bu">filter</span>(pl.col(<span class="st">"who"</span>) <span class="op">==</span> who)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Set thresholds and colors based on plot type</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> is_green_only:</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        text_threshold <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        text_y_pos <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        nudge_y <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        fill_colors <span class="op">=</span> {<span class="st">"All Britons"</span>: <span class="st">"#9f29ff"</span>, <span class="st">"2024 Green voters"</span>: <span class="st">"#31caa8"</span>}</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        text_colors <span class="op">=</span> {<span class="st">"All Britons"</span>: <span class="st">"white"</span>, <span class="st">"2024 Green voters"</span>: <span class="st">"#333333"</span>}</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        text_threshold <span class="op">=</span> <span class="dv">30</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        text_y_pos <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        nudge_y <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        fill_colors <span class="op">=</span> {</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>            <span class="st">"All Britons"</span>: <span class="st">"#9f29ff"</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>            <span class="st">"2024</span><span class="ch">\n</span><span class="st">Green"</span>: <span class="st">"#31caa8"</span>,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>            <span class="st">"2024</span><span class="ch">\n</span><span class="st">Labour"</span>: <span class="st">"#c20800"</span>,</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">"2024</span><span class="ch">\n</span><span class="st">Lib Dem"</span>: <span class="st">"#ffba22"</span>,</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>            <span class="st">"2024</span><span class="ch">\n</span><span class="st">Conservative"</span>: <span class="st">"#003cab"</span>,</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>            <span class="st">"2024</span><span class="ch">\n</span><span class="st">Reform UK"</span>: <span class="st">"#06a6ee"</span>,</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>        text_colors <span class="op">=</span> {</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>            <span class="st">"All Britons"</span>: <span class="st">"white"</span>,</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>            <span class="st">"2024</span><span class="ch">\n</span><span class="st">Green"</span>: <span class="st">"#333333"</span>,</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>            <span class="st">"2024</span><span class="ch">\n</span><span class="st">Labour"</span>: <span class="st">"white"</span>,</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>            <span class="st">"2024</span><span class="ch">\n</span><span class="st">Lib Dem"</span>: <span class="st">"#333333"</span>,</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>            <span class="st">"2024</span><span class="ch">\n</span><span class="st">Conservative"</span>: <span class="st">"white"</span>,</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>            <span class="st">"2024</span><span class="ch">\n</span><span class="st">Reform UK"</span>: <span class="st">"white"</span>,</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    plot <span class="op">=</span> (</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>        ggplot(plot_data, aes(y<span class="op">=</span><span class="st">"value"</span>, x<span class="op">=</span><span class="st">"what"</span>))</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> geom_col(aes(y<span class="op">=</span><span class="dv">100</span>), fill<span class="op">=</span><span class="st">"#3333330d"</span>)</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> geom_col(aes(fill<span class="op">=</span><span class="st">"variable"</span>))</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> geom_text(</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>            data<span class="op">=</span>plot_data.<span class="bu">filter</span>(pl.col(<span class="st">"value"</span>) <span class="op">&gt;</span> text_threshold),</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>            mapping<span class="op">=</span>aes(label<span class="op">=</span><span class="st">"value"</span>, y<span class="op">=</span>text_y_pos, color<span class="op">=</span><span class="st">"variable"</span>),</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>            ha<span class="op">=</span><span class="st">"left"</span>,</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>            size<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> geom_text(</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>            data<span class="op">=</span>plot_data.<span class="bu">filter</span>(pl.col(<span class="st">"value"</span>) <span class="op">&lt;=</span> text_threshold),</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>            mapping<span class="op">=</span>aes(label<span class="op">=</span><span class="st">"value"</span>, y<span class="op">=</span><span class="st">"value"</span>),</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>            ha<span class="op">=</span><span class="st">"left"</span>,</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>            size<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>            color<span class="op">=</span><span class="st">"#333333"</span>,</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>            nudge_y<span class="op">=</span>nudge_y,</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> coord_flip()</span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> facet_grid(cols<span class="op">=</span><span class="st">"variable"</span>)</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> scale_y_continuous(limits<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">100</span>])</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> scale_fill_manual(values<span class="op">=</span>fill_colors)</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> scale_color_manual(values<span class="op">=</span>text_colors)</span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> theme_minimal()</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> theme(</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>            axis_text_x<span class="op">=</span>element_blank(),</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>            panel_grid<span class="op">=</span>element_blank(),</span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>            legend_position<span class="op">=</span><span class="st">"none"</span>,</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>            axis_text_y<span class="op">=</span>element_text(ha<span class="op">=</span><span class="st">"left"</span>),</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>            strip_text<span class="op">=</span>element_text(ha<span class="op">=</span><span class="st">"left"</span>),</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>            plot_subtitle<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"bold"</span>, size<span class="op">=</span><span class="dv">12</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>            plot_title_position<span class="op">=</span><span class="st">"plot"</span>,</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span> labs(x<span class="op">=</span><span class="st">""</span>, y<span class="op">=</span><span class="st">""</span>, subtitle<span class="op">=</span>who)</span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> plot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true" href="">“Your Party” and Labour</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false" href="">International Political Figures</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-3" role="tab" aria-controls="tabset-2-3" aria-selected="false" href="">Green Party Leadership</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<p>This plot compares the favourability of Keir Starmer to the fledgling left-wing “Your Party” run by Jeremy Corbyn and Zarah Sultana, both historically on the Labour hard-left.</p>
+<p>To construct the overall assembly title I created a dummy plot that is effectively only a title and subtitle, and added this to the plot assembly. Patchwork has the <a href="https://patchwork.data-imaginist.com/reference/plot_annotation.html">plot_annotation()</a> function that doesn’t seem to be mirrored in <code>plotnine</code> yet, so this was the workaround I found!</p>
+<div id="9d96cb76" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>your_party_leaders <span class="op">=</span> (</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(<span class="st">"assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_leftwing.csv"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">"X.1"</span>: <span class="st">"who"</span>, <span class="st">"X.2"</span>: <span class="st">"what"</span>})</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    .unpivot(index<span class="op">=</span>[<span class="st">"who"</span>, <span class="st">"what"</span>], on<span class="op">=</span>[<span class="st">"All Britons"</span>, cs.starts_with(<span class="st">"2024"</span>)])</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    .with_columns(pl.col(<span class="st">"variable"</span>).<span class="bu">str</span>.replace(<span class="st">"&lt;br&gt;"</span>, <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>))</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"variable"</span>).cast(pl.Categorical),</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"what"</span>).cast(pl.Enum([<span class="st">"Unfavourable"</span>, <span class="st">"Favourable"</span>])),</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    ggplot()</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme_void()</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> labs(</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>        title<span class="op">=</span><span class="st">"How do Britons' attitudes towards Corbyn and Sultana</span><span class="ch">\n</span><span class="st">compare to their views on Starmer?"</span>,</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>        subtitle<span class="op">=</span><span class="st">"Do you have a favourable or unfavourable opinion of the following? %"</span>,</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme(</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>        plot_title<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"bold"</span>, size<span class="op">=</span><span class="dv">22</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>        plot_subtitle<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"light"</span>, size<span class="op">=</span><span class="dv">12</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>        plot_title_position<span class="op">=</span><span class="st">"plot"</span>,</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>        aspect_ratio<span class="op">=</span><span class="fl">0.001</span>,</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>        plot_margin<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    your_party_leaders, <span class="st">"Jeremy Corbyn"</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    your_party_leaders, <span class="st">"Zarah Sultana"</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    your_party_leaders, <span class="st">"Keir Starmer"</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="index_files/figure-html/cell-11-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="index_files/figure-html/cell-11-output-1.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<p>This plot is much the same as the domestic leaders, but shows various international political figures - President of Ukraine Volodymyr Zelenskyy, US President Donald Trump, US Vice President JD Vance, and President of Russia Vladimir Putin.</p>
+<div id="56a3daf0" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>international_leaders <span class="op">=</span> (</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(<span class="st">"assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_international.csv"</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">"X.1"</span>: <span class="st">"who"</span>, <span class="st">"X.2"</span>: <span class="st">"what"</span>})</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    .unpivot(index<span class="op">=</span>[<span class="st">"who"</span>, <span class="st">"what"</span>], on<span class="op">=</span>[<span class="st">"All Britons"</span>, cs.starts_with(<span class="st">"2024"</span>)])</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    .with_columns(pl.col(<span class="st">"variable"</span>).<span class="bu">str</span>.replace(<span class="st">"&lt;br&gt;"</span>, <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"variable"</span>).cast(pl.Categorical),</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"what"</span>).cast(pl.Enum([<span class="st">"Unfavourable"</span>, <span class="st">"Favourable"</span>])),</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    ggplot()</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme_void()</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> labs(</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        title<span class="op">=</span><span class="st">"YouGov international favourability ratings, August 2025"</span>,</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        subtitle<span class="op">=</span><span class="st">"Do you have a favourable or unfavourable opinion of the following? %"</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme(</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>        plot_title<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"bold"</span>, size<span class="op">=</span><span class="dv">22</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        plot_subtitle<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"light"</span>, size<span class="op">=</span><span class="dv">12</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        plot_title_position<span class="op">=</span><span class="st">"plot"</span>,</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>        aspect_ratio<span class="op">=</span><span class="fl">0.001</span>,</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>        plot_margin<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    international_leaders, <span class="st">"Volodymyr Zelenskyy (net +49)"</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    international_leaders, <span class="st">"Donald Trump (net -61)"</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    international_leaders, <span class="st">"JD Vance (net -55)"</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    international_leaders, <span class="st">"Vladimir Putin (net -86)"</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="index_files/figure-html/cell-12-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="index_files/figure-html/cell-12-output-1.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
+<p>At time of writing, a leaderhsip election was occurring in the UK Green Party, a our green, left-wing party which has historically had little representation in the House of Commons. Britons were surveyed on their opinions of various Green leadership figures (and a fictitious candidate to guage reflexive political opinions).</p>
+<p>As previously mentioned, this plot is cut from the same cloth as the others but the overall layout is somewhat different, hence the need for the different parameters to control label placement and so on. Here we add an additional mock caption to explain the non-existent Andrew Farmer MP.</p>
+<div id="1896d558" class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>green_party_leaders <span class="op">=</span> (</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(<span class="st">"assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_green.csv"</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">"X.1"</span>: <span class="st">"who"</span>, <span class="st">"X.2"</span>: <span class="st">"what"</span>})</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    .unpivot(index<span class="op">=</span>[<span class="st">"who"</span>, <span class="st">"what"</span>], on<span class="op">=</span>[<span class="st">"All Britons"</span>, cs.starts_with(<span class="st">"2024"</span>)])</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"variable"</span>).cast(pl.Categorical),</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"what"</span>).cast(pl.Enum([<span class="st">"Don't know"</span>, <span class="st">"Unfavourable"</span>, <span class="st">"Favourable"</span>])),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    ggplot()</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme_void()</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> labs(</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>        title<span class="op">=</span><span class="st">"Green leadership figures largely unknown, even by</span><span class="ch">\n</span><span class="st">those who have voted for the party"</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>        subtitle<span class="op">=</span><span class="st">"Do you have a favourable or unfavourable opinion of the following? %"</span>,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme(</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>        plot_title<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"bold"</span>, size<span class="op">=</span><span class="dv">22</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>        plot_subtitle<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"light"</span>, size<span class="op">=</span><span class="dv">12</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>        plot_title_position<span class="op">=</span><span class="st">"plot"</span>,</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>        aspect_ratio<span class="op">=</span><span class="fl">0.001</span>,</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>        plot_margin<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    green_party_leaders, <span class="st">"Carla Denyer"</span>, is_green_only<span class="op">=</span><span class="va">True</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    green_party_leaders, <span class="st">"Adrian Ramsay"</span>, is_green_only<span class="op">=</span><span class="va">True</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    green_party_leaders, <span class="st">"Zack Polanski"</span>, is_green_only<span class="op">=</span><span class="va">True</span></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>    green_party_leaders, <span class="st">"Ellie Chowns"</span>, is_green_only<span class="op">=</span><span class="va">True</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> plot_leader_favourability(</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>    green_party_leaders, <span class="st">"Andrew Farmer*"</span>, is_green_only<span class="op">=</span><span class="va">True</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>) <span class="op">/</span> (</span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>    ggplot()</span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme_void()</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> labs(</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>        caption<span class="op">=</span><span class="st">"* Andrew Farmer is a fake politician, used to test how many respondents reflexively say they have an opinion of a</span><span class="ch">\n</span><span class="st">non-existent figure"</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme(</span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>        plot_caption<span class="op">=</span>element_text(ha<span class="op">=</span><span class="st">"left"</span>, face<span class="op">=</span><span class="st">"light"</span>, size<span class="op">=</span><span class="dv">12</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>        plot_caption_position<span class="op">=</span><span class="st">"plot"</span>,</span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a>        aspect_ratio<span class="op">=</span><span class="fl">0.001</span>,</span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a>        plot_margin<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a>) <span class="op">+</span> theme(figure_size<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">7</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><a href="index_files/figure-html/cell-13-output-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="index_files/figure-html/cell-13-output-1.png" class="img-fluid figure-img"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="other-senior-political-figures-august-2025-stacked-bars" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="other-senior-political-figures-august-2025-stacked-bars">Other senior political figures, August 2025 (Stacked Bars)</h2>
+<p>Frankly, this is where the wheels start falling off!</p>
+<p>This is a big summary stacked bar chart which shows a Favourable, Unfavourable and “Don’t Know” score for a load of different political figures, both domestic and international. On first glance, you might assume we could do what we did for the previous bar charts. However, in this instance, the height of each “subplot” is different as the number of figures in each category are different, and having to adjust the heights of the different subplots would be very faffy. So we’re just going to have to use a <code>facet</code> to get something approximating the original plot.</p>
+<p>In recent versions of <code>ggplot2</code> we could use <code>facet_wrap()</code> with one column of facets and a combination of the <code>space</code> and <code>scales</code> arguments to create something very similar to the YouGov plot. In older version of <code>ggplot2</code>, we could use <code>ggforce::facet_col()</code> to achieve much the same thing. No similar functionality seems to exist in <code>plotnine</code>, so we’re going to stick with <code>facet_grid()</code> and live with having the subplot labels be on the right hand side of the plot.</p>
+<p>A couple of curious bugs or limitations of <code>plotnine</code> emerged when trying this:</p>
+<ul>
+<li><p>I could not seem to left-align the facet labels if there were new lines (<code>\n</code>) within them.</p></li>
+<li><p>Left-aligning the y-axis labels placed the start point in different places for the different facets.</p></li>
+</ul>
+<p>Anyway, the Python code below shares many of the same themes as the other plots, with some new strategies needed for this plot:</p>
+<ul>
+<li><p>There’s a lot of <code>pl.Enum()</code> to ensure categories appear in the correct order; this is similar to using <code>factor()</code> in R. To order the leaders by favourability was quite round-the-houses; in R I’d have used <code>forcats::fct_reorder()</code> to do it in one line.</p></li>
+<li><p>To achieve the correct value labels I used <code>position_stack()</code> with the <code>vjust</code> argument. Very small value labels don’t appear in the data, so I filtered the dataset within the <code>geom_text()</code> call. It’s not possible to use a <code>nudge</code> argument with <code>position_stack()</code>, and adding a value to the data directly will throw off <code>position_stack()</code>s calculations, so I’ve cheated and just added a space (<code>" "</code>) to the beginning of the label.</p></li>
+<li><p>The x scale extends to <code>101</code> - this isn’t a funky Python counting thing this time, though - the YouGov plot has this ragged edge where, I imagine, values have been rounded and now don’t always add up to <code>100</code>.</p></li>
+</ul>
+<div id="1b851f9b" class="cell page-columns page-full" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read the leaders dataset</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>leaders <span class="op">=</span> (</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(<span class="st">"assets</span><span class="ch">\\</span><span class="st">data</span><span class="ch">\\</span><span class="st">yougov_politicians.csv"</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">"X.1"</span>: <span class="st">"category"</span>, <span class="st">"X.2"</span>: <span class="st">"who"</span>})</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    .unpivot([<span class="st">"Favourable"</span>, <span class="st">"Don't know"</span>, <span class="st">"Unfavourable"</span>], index<span class="op">=</span>[<span class="st">"category"</span>, <span class="st">"who"</span>])</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># need to order the variable</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"variable"</span>).cast(pl.Enum([<span class="st">"Unfavourable"</span>, <span class="st">"Don't know"</span>, <span class="st">"Favourable"</span>])),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Stack categories by replacing spaces with new lines, then order to match yougov plot</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"category"</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        .<span class="bu">str</span>.replace_all(<span class="st">" "</span>, <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>        .cast(</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>            pl.Enum(</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>                [<span class="st">"Party</span><span class="ch">\n</span><span class="st">leaders"</span>, <span class="st">"Other</span><span class="ch">\n</span><span class="st">senior</span><span class="ch">\n</span><span class="st">politicians"</span>, <span class="st">"Political</span><span class="ch">\n</span><span class="st">parties"</span>]</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="co"># get the order of the leaders based on favourability</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>ordered_leaders <span class="op">=</span> (</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    leaders.<span class="bu">filter</span>(pl.col(<span class="st">"variable"</span>) <span class="op">==</span> <span class="st">"Favourable"</span>)</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"value"</span>)</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    .get_column(<span class="st">"who"</span>)</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    .to_list()</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="co"># order the leaders column to by favourability</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>leaders <span class="op">=</span> leaders.with_columns(pl.col(<span class="st">"who"</span>).cast(pl.Enum(ordered_leaders)))</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="co"># construct plot</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>    ggplot(leaders, aes(y<span class="op">=</span><span class="st">"value"</span>, x<span class="op">=</span><span class="st">"who"</span>))</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># geometries</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> geom_col(aes(fill<span class="op">=</span><span class="st">"variable"</span>))</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> geom_text(</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>        data<span class="op">=</span>leaders.with_columns(</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>            pl.when(pl.col(<span class="st">"value"</span>) <span class="op">&lt;=</span> <span class="dv">3</span>)</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>            .then(pl.lit(<span class="st">""</span>))</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>            .otherwise(<span class="st">" "</span> <span class="op">+</span> pl.col(<span class="st">"value"</span>).cast(pl.String))</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>            .alias(<span class="st">"value_str"</span>)</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>        mapping<span class="op">=</span>aes(y<span class="op">=</span><span class="st">"value"</span>, label<span class="op">=</span><span class="st">"value_str"</span>, group<span class="op">=</span><span class="st">"variable"</span>, color<span class="op">=</span><span class="st">"variable"</span>),</span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>        position<span class="op">=</span>position_stack(vjust<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>        size<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>        ha<span class="op">=</span><span class="st">"left"</span>,</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>        show_legend<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>    <span class="co"># facet</span></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> facet_grid(rows<span class="op">=</span><span class="st">"category"</span>, scales<span class="op">=</span><span class="st">"free_y"</span>, space<span class="op">=</span><span class="st">"free"</span>)</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>    <span class="co"># scales</span></span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> coord_flip()</span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> scale_fill_manual(</span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>        values<span class="op">=</span>{</span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Favourable"</span>: <span class="st">"#9f29ff"</span>,</span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Don't know"</span>: <span class="st">"#ccd1db"</span>,</span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Unfavourable"</span>: <span class="st">"#ff412c"</span>,</span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>        breaks<span class="op">=</span>[<span class="st">"Favourable"</span>, <span class="st">"Don't know"</span>, <span class="st">"Unfavourable"</span>],</span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> scale_color_manual(</span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>        values<span class="op">=</span>{</span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Favourable"</span>: <span class="st">"white"</span>,</span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Don't know"</span>: <span class="st">"#333333"</span>,</span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Unfavourable"</span>: <span class="st">"white"</span>,</span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> scale_y_continuous(limits<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">101</span>])</span>
+<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a>    <span class="co"># themes</span></span>
+<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme_minimal()</span>
+<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> theme(</span>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a>        axis_text_x<span class="op">=</span>element_blank(),</span>
+<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a>        panel_grid<span class="op">=</span>element_blank(),</span>
+<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a>        legend_position<span class="op">=</span><span class="st">"top"</span>,</span>
+<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a>        axis_text_y<span class="op">=</span>element_text(ha<span class="op">=</span><span class="st">"left"</span>),</span>
+<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a>        strip_text<span class="op">=</span>element_text(ha<span class="op">=</span><span class="st">"left"</span>, face<span class="op">=</span><span class="st">"bold"</span>, rotation<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a>        plot_title<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"bold"</span>, size<span class="op">=</span><span class="dv">22</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb13-78"><a href="#cb13-78" aria-hidden="true" tabindex="-1"></a>        plot_subtitle<span class="op">=</span>element_text(face<span class="op">=</span><span class="st">"light"</span>, size<span class="op">=</span><span class="dv">12</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb13-79"><a href="#cb13-79" aria-hidden="true" tabindex="-1"></a>        plot_title_position<span class="op">=</span><span class="st">"plot"</span>,</span>
+<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a>        plot_caption<span class="op">=</span>element_text(ha<span class="op">=</span><span class="st">"left"</span>, face<span class="op">=</span><span class="st">"light"</span>, size<span class="op">=</span><span class="dv">12</span> <span class="op">/</span> <span class="fl">1.5</span>),</span>
+<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a>        plot_caption_position<span class="op">=</span><span class="st">"plot"</span>,</span>
+<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a>        panel_spacing<span class="op">=</span><span class="fl">0.05</span>,</span>
+<span id="cb13-83"><a href="#cb13-83" aria-hidden="true" tabindex="-1"></a>        figure_size<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">7</span>),</span>
+<span id="cb13-84"><a href="#cb13-84" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-85"><a href="#cb13-85" aria-hidden="true" tabindex="-1"></a>    <span class="co"># labels</span></span>
+<span id="cb13-86"><a href="#cb13-86" aria-hidden="true" tabindex="-1"></a>    <span class="op">+</span> labs(</span>
+<span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a>        x<span class="op">=</span><span class="st">""</span>,</span>
+<span id="cb13-88"><a href="#cb13-88" aria-hidden="true" tabindex="-1"></a>        y<span class="op">=</span><span class="st">""</span>,</span>
+<span id="cb13-89"><a href="#cb13-89" aria-hidden="true" tabindex="-1"></a>        fill<span class="op">=</span><span class="st">""</span>,</span>
+<span id="cb13-90"><a href="#cb13-90" aria-hidden="true" tabindex="-1"></a>        title<span class="op">=</span><span class="st">"YouGov political favourability ratings, August 2025"</span>,</span>
+<span id="cb13-91"><a href="#cb13-91" aria-hidden="true" tabindex="-1"></a>        subtitle<span class="op">=</span><span class="st">"Do you have a favourable or unfavourable opinion of the following? %"</span>,</span>
+<span id="cb13-92"><a href="#cb13-92" aria-hidden="true" tabindex="-1"></a>        caption<span class="op">=</span><span class="st">"* Andrew Farmer is a fake politician, used to test how many respondents reflexively say they have an opinion of a</span><span class="ch">\n</span><span class="st">non-existent figure"</span>,</span>
+<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-94"><a href="#cb13-94" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="index_files/figure-html/cell-14-output-1.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-9"><img src="index_files/figure-html/cell-14-output-1.png" width="672" height="672" class="figure-img column-body-outset-right"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Now these limitations and shortcomings are somewhat frustrating and, just to get this as a “win”, I have also produced this final plot from the article in R’s <code>ggplot2</code> below. Two points to note here, though:</p>
+<ul>
+<li><p><code>plotnine</code> is relatively new, so its no surprise it can’t do everything <code>ggplot2</code> can. <code>ggplot2</code> is old enough to drink in my country, whereas <code>plotnine</code> is only half-way through primary school, so its quite impressive that <code>plotnine</code> can get as close as it does on its own.</p></li>
+<li><p>The <code>ggplot2</code> implementation still doesn’t <em>quite</em> look right - the category labels aren’t aligned with the plot. You can get part of the way there with the arguably off-label move of passing a negative value to <code>hjust</code> in <code>theme(strip.text)</code>, or could split the plots up and <code>patchwork</code> them back together (although you’d need to do the maths on the bar heights so they’re all consistent, and again that’s not convenient).</p></li>
+</ul>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Let’s see it in R
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"assets/data/yougov_politicians.csv"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">rename</span>(<span class="at">category =</span> X<span class="fl">.1</span>, <span class="at">who =</span> X<span class="fl">.2</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">pivot_longer</span>(<span class="sc">-</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">favourable =</span> <span class="fu">ifelse</span>(name <span class="sc">==</span> <span class="st">"Favourable"</span>, value, <span class="cn">NA</span>),</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">who =</span> forcats<span class="sc">::</span><span class="fu">fct_reorder</span>(who, favourable),</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="fu">factor</span>(name, <span class="fu">c</span>(<span class="st">"Unfavourable"</span>, <span class="st">"Don't know"</span>, <span class="st">"Favourable"</span>)),</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">category =</span> <span class="fu">factor</span>(category, <span class="fu">c</span>(<span class="st">"Party leaders"</span>, <span class="st">"Other senior politicians"</span>, <span class="st">"Political parties"</span>))</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> value, <span class="at">y =</span> who)) <span class="sc">+</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="fu">aes</span>(<span class="at">fill =</span> name)) <span class="sc">+</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">ifelse</span>(value <span class="sc">&lt;</span> <span class="dv">5</span>, <span class="st">""</span>, <span class="fu">paste</span>(<span class="st">" "</span>, value)), <span class="at">group =</span> name, <span class="at">color =</span> name),</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">hjust =</span> <span class="dv">0</span>,</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_stack</span>(<span class="at">vjust =</span> <span class="dv">0</span>),</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">show.legend =</span> <span class="cn">FALSE</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">0</span>),</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.clip =</span> <span class="st">"off"</span>,</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"top"</span>,</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.justification =</span> <span class="st">"left"</span>,</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">22</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>), </span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title.position =</span> <span class="st">"plot"</span>,</span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.caption =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>, <span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">face =</span> <span class="st">"italic"</span>),</span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.caption.position =</span> <span class="st">"plot"</span></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(category), <span class="at">scales =</span> <span class="st">"free_y"</span>, <span class="at">space =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">clip =</span> <span class="st">"off"</span>) <span class="sc">+</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">expand =</span> <span class="fu">expansion</span>()) <span class="sc">+</span></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="cn">NULL</span>,</span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="cn">NULL</span>,</span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"YouGov political favourability ratings, August 2025"</span>,</span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Do you have a favourable or unfavourable opinion of the following? %"</span>,</span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"* Andrew Farmer is a fake politician, used to test how many respondents reflexively say they have an opinion of a non-</span><span class="sc">\n</span><span class="st">existent figure"</span></span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Favourable"</span> <span class="ot">=</span> <span class="st">"#9f29ff"</span>,</span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Don't know"</span> <span class="ot">=</span> <span class="st">"#ccd1db"</span>,</span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Unfavourable"</span> <span class="ot">=</span> <span class="st">"#ff412c"</span></span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="st">"Favourable"</span>, <span class="st">"Don't know"</span>, <span class="st">"Unfavourable"</span>)</span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(</span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Favourable"</span> <span class="ot">=</span> <span class="st">"white"</span>,</span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Don't know"</span> <span class="ot">=</span> <span class="st">"#333333"</span>,</span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a>      <span class="st">"Unfavourable"</span> <span class="ot">=</span> <span class="st">"white"</span></span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="st">"Favourable"</span>, <span class="st">"Don't know"</span>, <span class="st">"Unfavourable"</span>)</span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"assets/media/R_plot.png"</span>, <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">10</span>, <span class="at">dpi =</span> <span class="dv">300</span>, <span class="at">device =</span> <span class="st">"png"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><a href="assets/media/R_plot.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="assets/media/R_plot.png" class="img-fluid"></a></p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="wrap-up" class="level1">
+<h1>Wrap-up</h1>
+<p>Good news - that’s all of the plots! To close, I just want to give a few thoughts to summarise as an R user coming to <code>plotnine</code> and Python more generally:</p>
+<ul>
+<li><p>The syntax of <code>plotnine</code> is truly almost identical to <code>ggplot2</code>, so it really is easy to move from one to the other. Yes, the odd argument is named slightly differently (e.g., <code>ha</code> and <code>va</code> to align text), but these instances are few and far between. Despite never really writing any proper Python in the past, between <code>plotnine</code> and <code>polars</code> it really wasn’t a struggle. Speaking of…</p></li>
+<li><p><code>polars</code> feels nice to use in a way <code>pandas</code> never quite did. It really does <em>feel</em> close to <code>dplyr</code> - it just, by necessity, lacks the convenience brought by non-standard evaluation in R (e.g., needing to say <code>pl.with_columns(pl.col("x"))</code> rather than just <code>mutate(x)</code>).</p></li>
+<li><p>One of the best things about <code>ggplot2</code> is its extensibility: the ecosystem of custom stats, geoms, facets, and scales gives you an incredible range of options for building exactly the plots you need. I’m not yet sure how extensible plotnine is, but I imagine many of these capabilities will arrive in time.</p></li>
+<li><p>Speaking as someone who works with a lot of weather data, I’d love <code>coord_polar()</code> to come to <code>plotnine</code> so I can make a wind rose, please! 🙂</p></li>
+<li><p>When learning a new tool, the challenge isn’t just understanding how it works - it’s also figuring out what to do with it. Recreating existing visualisations, especially those based on freely available data (like YouGov’s), is a great way to cut through that problem. You have a clear objective, real data, and a concrete end result to aim for.</p></li>
+</ul>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"loop":false,"closeEffect":"zoom","descPosition":"bottom","openEffect":"zoom","selector":".lightbox"});
+window.onload = () => {
+  lightboxQuarto.on('slide_before_load', (data) => {
+    const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+    const href = trigger.getAttribute('href');
+    if (href !== null) {
+      const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+      if (imgEl !== null) {
+        const srcAttr = imgEl.getAttribute("src");
+        if (srcAttr && srcAttr.startsWith("data:")) {
+          slideConfig.href = srcAttr;
+        }
+      }
+    } 
+  });
+
+  lightboxQuarto.on('slide_after_load', (data) => {
+    const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+    if (window.Quarto?.typesetMath) {
+      window.Quarto.typesetMath(slideNode);
+    }
+  });
+
+};
+          </script>
+
+
+
+
+</body></html>
