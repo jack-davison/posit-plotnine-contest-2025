@@ -17,6 +17,18 @@ All of the plots are built using [`plotnine`](https://plotnine.org/), an impleme
 
 This submission shows how examples of effective data visualisation found "in-the-wild" can be recreated with the `plotnine` package. It also contains some surprises I found and reflections I had as an R user who only infrequently works in Python.
 
+## 📈 The Graphs
+
+The following types of graphics are created by the code in this repository. Note that four different individual politician tracker plots and three different "favourability by party" bar charts are created, though only four are shown here.
+
+![](assets/media/output_keir_tracker.png)
+
+![](assets/media/output_longterm_tracker.png)
+
+![](assets/media/output_bars.png)
+
+![](assets/media/output_stackedbars.png)
+
 ## 🗃️ The Repository
 
 The code in this repository is completely reproducible, and builds a [quarto](https://quarto.org/) HTML page with all of the plots contained within. Ensure you have [uv](https://docs.astral.sh/uv/) installed, then run the below commands to create a Python virtual environment and render the content.
