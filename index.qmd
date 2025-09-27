@@ -43,6 +43,8 @@ YouGov describes itself as:
 
 While YouGov collects and vends data relating to a myriad of topics, there are many core data visualisations which crop up time and time again in their online articles. The article chosen for recreation shows some nice examples of typical YouGov visualisations, including line and bar charts. If you would like to recreate YouGov articles yourself, the site makes it particularly easy; all data can be obtained using the "Get the data" buttons at the bottom of each plot in a YouGov web article.
 
+On this page, some of the original YouGov plots are found in collapsible callout boxes for easy reference, though I would recommend reading the original YouGov article to get a feel for what we're trying to recreate.
+
 ## About Me
 
 I am a senior consultant and data analyst working for an Environmental Consultancy in South Oxfordshire in the United Kingdom. 
@@ -94,6 +96,12 @@ As previously noted, all data were obtained using the "Get the data" buttons at 
 
 ## Leader Favourability Trends (Line Charts)
 
+::: {.callout-note collapse="true"}
+### See original plot
+
+<img src="assets/media/yougov_keir.png" style='border:1px solid #ff6756' >
+:::
+
 The first class of charts we'll recreate are the favourability trends. The original article has four - one for each of Keir Starmer, Nigel Farage, Kemi Badenoch and Ed Davies. The 'Unfavourable' trend is given in red, the 'Favourable' trend in purple, and some key milestones in vertical lines. The lines also get direct labels at their ends in lieu of a proper plot legend.
 
 As we're making four very similar charts, I'm defining a function. First, it reads and manipulates our input data:
@@ -102,7 +110,7 @@ As we're making four very similar charts, I'm defining a function. First, it rea
 
 - With this newly processed data, we create a separate polars DataFrame which just includes the final value for each of 'favourable' and 'unfavourable'. We need this for the 'direct labels' at the end of the line charts.
 
-- On the subject of the direct labels; the very last method applied in the first chunk of my function uses the `extra_sep` argument. As we're using direct labels, if the ends of the lines are very close together these can potentially overlap one another. This argument lets us add a little extra spacing between the values. 
+- On the subject of the direct labels; the very last method applied in the first chunk of our function uses the `extra_sep` argument. As we're using direct labels, if the ends of the lines are very close together these can potentially overlap one another. This argument lets us add a little extra spacing between the values. 
 
     - I happen to know that 'unfavourable' is always higher for these four politicians (and therefore wants that extra spacing *adding*) - if it was more variable I'd have to write something clever to find the higher of the two values and add to that one, but in this case we can hard-code it. 
     
@@ -124,7 +132,7 @@ Then we construct our plot. The syntax is very very similar to R's `ggplot2`, by
 
     - The `expand` argument is also used to surpress the automatic padding `plotnine` (and `ggplot2`) adds to axis ranges - `[0,0]` removes all of this, though the x-axis does retain some so that the direct labels are still readable.
 
-    - We also use out `month_labels` argument in `labels`. This works because `labels` can take any callable that recieves the axis breaks and then does whatever arbitrary thing you'd like to them, as long as it returns a label for plotting.
+    - We also use our `month_labels` function in `labels`. This works because `labels` can take any callable that recieves the axis breaks and then does whatever arbitrary thing you'd like to them, as long as it returns a label for plotting.
 
 - Various `theme()` options are added. Notably the legend is removed with `legend_position`, and `plot_title_position` is set to `"plot"`. This second argument is quite subtle, but it makes the title sit on top of the y-axis labels rather than be aligned with the actual plotting area.
 
@@ -437,7 +445,13 @@ numbers = [
 )
 ```
 
-## Leader Favourability, August 2025 (Bar Charts)
+## Leader Favourability By Party (Bar Charts)
+
+::: {.callout-note collapse="true"}
+### See original plot
+
+<img src="assets/media/yougov_bars.png" style='border:1px solid #ff6756' >
+:::
 
 This next step of plots are quite appealing barchars showing overall favourability for different national and international political figures by UK political affiliation. We might call these kinds of bars 'small multiples' and, on the face of them, they look quite simple! Each combination of politician and political affiliation gets a favourable bar and an unfavourable bar. But these plots have quite a lot of features that add some challenge to recreation with `plotnine` (or, even, `ggplot2`):
 
@@ -675,7 +689,13 @@ green_party_leaders = (
 
 :::
 
-## Other senior political figures, August 2025 (Stacked Bars)
+## Overall Senior Political Figure Favourability (Stacked Bars)
+
+::: {.callout-note collapse="true"}
+### See original plot
+
+<img src="assets/media/yougov_stacked.png" style='border:1px solid #ff6756' >
+:::
 
 Frankly, this is where the wheels start falling off!
 
