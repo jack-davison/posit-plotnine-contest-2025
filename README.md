@@ -1,5 +1,5 @@
 <h2 align="center">
- Posit `plotnine` Contest 2025 Submission
+ Posit <code>plotnine</code> Contest 2025 Submission
 </h2>
 <h1 align="center">
 <a href="https://jack-davison.github.io/posit-plotnine-contest-2025/">YouGov Visualisations in Python</a><br>Recreating Political Favourability Graphics with <code>plotnine</code>
