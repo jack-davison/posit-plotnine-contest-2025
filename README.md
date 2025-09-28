@@ -9,6 +9,8 @@
 
 <div align="center"><b><a href="https://jack-davison.github.io/posit-plotnine-contest-2025/">[View Submission]</a></b></div>
 
+<div align="center"><b><a href="https://github.com/has2k1/plotnine/discussions/987">[View <code>plotnine</code> Discussion]</a></b></div>
+
 ## ℹ️ Purpose
 
 This submission includes attempted one-to-one recreations of the visualisations in ["Net favourability gap between Conservatives and Labour smallest in nearly four years"](https://yougov.co.uk/politics/articles/52795-political-favourability-ratings-august-2025) in Python and plotnine, originally published by [Dylan Difford](https://yougov.co.uk/people/dylan.difford), a Junior Data Journalist at YouGov, on August 19, 2025.
